@@ -3,18 +3,13 @@ Feature: Set ships
   As a player,
   I want to set my warships on my sea.
 
-  Scenario: Set carrier
-    When player A sets the carrier to A1
-    Then the ship is on the fields A1 to E1
+  Scenario Outline: Ship types and their size
+    When player A sets a <ship type> to A1
+    Then the ship occupies the fields <from> to <to>
 
-  Scenario: Set battleship
-    When player A sets the battleship to A1
-    Then the ship is on the fields A1 to D3
-
-  Scenario: Set destroyer
-    When player A sets the destroyer onto A1
-    Then the ship is on the fields A1 to C2
-
-  Scenario: Set submarine
-    When player A sets the submarine onto A1
-    Then the ship is on the fields A1 to B2
+  Examples:
+    | ship type  | from | to |
+    | carrier    | A1   | E1 |
+    | battleship | A1   | D3 |
+    | destroyer  | A1   | C2 |
+    | submarine  | A1   | B2 |
