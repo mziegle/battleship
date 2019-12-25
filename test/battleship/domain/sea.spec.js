@@ -5,9 +5,11 @@ var Battleship = require('../../../src/battleship/domain/ship').Battleship;
 
 describe('Sea', () => {
     var sea;
+    var placeShip;
 
     beforeEach(() => {
         sea = new Sea();
+        placeShip = (x, y) => sea.placeShip(x, y, new Battleship(), ShipAlignment.horizontally)
     });
 
     describe('#Sea()', () => {
@@ -43,7 +45,6 @@ describe('Sea', () => {
         })
 
         it('should not allow to place a ship outside the sea', () => {
-            placeShip = (x, y) => sea.placeShip(x, y, new Battleship(), ShipAlignment.horizontally)
             placeShipToQ55 = () => placeShip('Q', 55)
             placeShipToANeg1 = () => placeShip('A', -1)
             placeShipToDollar1 = () => placeShip('$', 1)
@@ -52,6 +53,19 @@ describe('Sea', () => {
             placeShipToANeg1.should.throw('(A, -1)');
             placeShipToDollar1.should.throw('($, 1)');
         })
+
+        it('should throw an error when one ships is placed onto an other', () => {
+            placeShipToA1 = () => placeShip('A', 1);
+            placeShipToD1 = () => placeShip('D', 1);
+
+            placeShipToA1();
+            placeShipToA1.should.throw('(A, 1)');
+            placeShipToD1.should.throw('(D, 1)');
+        });
+
+        it('should throw an error when two ships are placed next to each other', () => {
+
+        });
     });
 
 });
