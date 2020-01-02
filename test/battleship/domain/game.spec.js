@@ -31,6 +31,4 @@ describe('Game', () => {
             unkownPlayerPlacesShip.should.throw('unknown');
         });
     })
-
-
 })

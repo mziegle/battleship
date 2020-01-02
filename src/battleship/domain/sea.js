@@ -2,6 +2,10 @@ function Field(x, y) {
     this.x = x;
     this.y = y;
     this.occupied = false;
+
+    this.toString = function() {
+        return `(${String.fromCharCode(this.x + 65)}, ${this.y + 1})`;
+    }
 }
 
 Field.prototype.occupy = function() {
@@ -33,6 +37,14 @@ Grid.prototype.getField = function(x, y) {
     return this.table[characterToXCoordinate(x)][startFromZero(y)]
 }
 
+Grid.prototype.getGridField = function(x, y) {
+    if (this.isPositionInGrid(x, y)) {
+        return this.table[x][y]
+    }
+
+    return undefined;
+}
+
 Grid.prototype.setHorizontally = function(positionX, positionY, size) {
     var x = characterToXCoordinate(positionX)
     var y = startFromZero(positionY);
@@ -52,12 +64,38 @@ Grid.prototype.setVertically = function(positionX, positionY, size) {
 }
 
 Grid.prototype.occupyFields = function(fields) {
+    this.enforceFieldsFree(fields);
+    this.enforceAdjacentFieldsFree(fields);
+    
+    fields.forEach(field => {
+        field.occupy();
+    });
+}
+
+Grid.prototype.enforceFieldsFree = function(fields) {
     fields.forEach(field => {
         if (field.occupied) {
-            throw new RangeError(`Area (${String.fromCharCode(field.x + 65)}, ${field.y + 1}) is already occupied`);
+            throw new RangeError(`Area ${field.toString()} is already occupied`);
         }
+    });
+}
 
-        field.occupy();
+Grid.prototype.enforceAdjacentFieldsFree = function(fields) {
+    fields.forEach(field => {
+        var top = this.getGridField(field.x, field.y - 1);
+        var bottom = this.getGridField(field.x, field.y + 1);
+        var left = this.getGridField(field.x - 1, field.y);
+        var right = this.getGridField(field.x, field.y + 1);
+        var topLeft = this.getGridField(field.x - 1, field.y - 1);
+        var topRight = this.getGridField(field.x + 1, field.y - 1);
+        var bottomLeft = this.getGridField(field.x - 1, field.y + 1);
+        var bottomRight = this.getGridField(field.x + 1, field.y + 1);
+
+        [top, bottom, left, right, topLeft, topRight, bottomLeft, bottomRight].forEach(neighbor => {
+            if (neighbor && neighbor.occupied) {
+                throw new Error(`Adjacent area ${neighbor.toString()} is occupied`);
+            }
+        })
     });
 }
 
@@ -89,7 +127,7 @@ Grid.prototype.verticalFields = function(x, y, size) {
 
 Grid.prototype.enforcePositionInGrid = function(x, y) {
     if (!this.isPositionInGrid(x, y)) {
-        throw new RangeError(`Area (${String.fromCharCode(x + 65)}, ${y + 1}) is not in sea`);
+        throw new RangeError(`Area ${new Field(x, y).toString()} is not in sea`);
     }
 }
 
