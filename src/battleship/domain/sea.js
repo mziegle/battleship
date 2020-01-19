@@ -1,15 +1,21 @@
-function Field(x, y) {
-    this.x = x;
-    this.y = y;
-    this.occupied = false;
-
-    this.toString = function() {
-        return `(${String.fromCharCode(this.x + 65)}, ${this.y + 1})`;
+class Field {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.occupied = false;
     }
-}
 
-Field.prototype.occupy = function() {
-    this.occupied = true;
+    toString() {
+        return `${String.fromCharCode(this.x + 65)}${this.y + 1}`;
+    }
+
+    occupy() {
+        this.occupied = true;
+    }
+    
+    free() {
+        this.occupied = false;
+    }
 }
 
 function Grid(size) {
@@ -52,6 +58,8 @@ Grid.prototype.setHorizontally = function(positionX, positionY, size) {
     var fields = this.horizontalFields(x, y, size);
 
     this.occupyFields(fields);
+
+    return fields;
 }
 
 Grid.prototype.setVertically = function(positionX, positionY, size) {
@@ -61,6 +69,8 @@ Grid.prototype.setVertically = function(positionX, positionY, size) {
     var fields = this.verticalFields(x, y, size);
 
     this.occupyFields(fields);
+
+    return fields;
 }
 
 Grid.prototype.occupyFields = function(fields) {
@@ -82,21 +92,26 @@ Grid.prototype.enforceFieldsFree = function(fields) {
 
 Grid.prototype.enforceAdjacentFieldsFree = function(fields) {
     fields.forEach(field => {
-        var top = this.getGridField(field.x, field.y - 1);
-        var bottom = this.getGridField(field.x, field.y + 1);
-        var left = this.getGridField(field.x - 1, field.y);
-        var right = this.getGridField(field.x, field.y + 1);
-        var topLeft = this.getGridField(field.x - 1, field.y - 1);
-        var topRight = this.getGridField(field.x + 1, field.y - 1);
-        var bottomLeft = this.getGridField(field.x - 1, field.y + 1);
-        var bottomRight = this.getGridField(field.x + 1, field.y + 1);
-
-        [top, bottom, left, right, topLeft, topRight, bottomLeft, bottomRight].forEach(neighbor => {
-            if (neighbor && neighbor.occupied) {
+        this.getAdjacentFields(field).forEach(neighbor => {
+            if (neighbor.occupied) {
                 throw new Error(`Adjacent area ${neighbor.toString()} is occupied`);
             }
         })
     });
+}
+
+Grid.prototype.getAdjacentFields = function(field) {
+    var top = this.getGridField(field.x, field.y - 1);
+    var bottom = this.getGridField(field.x, field.y + 1);
+    var left = this.getGridField(field.x - 1, field.y);
+    var right = this.getGridField(field.x + 1, field.y);
+    var topLeft = this.getGridField(field.x - 1, field.y - 1);
+    var topRight = this.getGridField(field.x + 1, field.y - 1);
+    var bottomLeft = this.getGridField(field.x - 1, field.y + 1);
+    var bottomRight = this.getGridField(field.x + 1, field.y + 1);
+
+    return [top, bottom, left, right, topLeft, topRight, bottomLeft, bottomRight]
+        .filter(neighbor => neighbor);
 }
 
 Grid.prototype.horizontalFields = function(x, y, size) {
@@ -146,11 +161,23 @@ Sea.prototype.isHit = function(x, y) {
     return this.grid.getField(x, y).occupied;
 }
 
+Sea.prototype.destory = function(x, y) {
+    return this.grid.getField(x, y).free();
+}
+
+Sea.prototype.isShipSunk = function(x, y) {
+    var adjacentFields = this.grid.getAdjacentFields(this.grid.getField(x, y));
+
+    return adjacentFields.find(field => field.occupied) === undefined;
+}
+
 Sea.prototype.placeShip = function(x, y, ship, alignment) {
+    var fields = [];
+
     if (alignment == ShipAlignment.vertically) {
-        this.grid.setVertically(x, y, ship.size);
+        fields = this.grid.setVertically(x, y, ship.size);
     } else {
-        this.grid.setHorizontally(x, y, ship.size);
+        fields = this.grid.setHorizontally(x, y, ship.size);
     }
 
     var shipType = ship.type;
@@ -160,10 +187,19 @@ Sea.prototype.placeShip = function(x, y, ship, alignment) {
     } else {
         this.ships[shipType] = [ship];
     }
+
+    return fields;
 }
 
 Sea.prototype.bombard = function(x, y) {
     if (this.isHit(x, y)) {
+        
+        this.destory(x, y);
+
+        if (this.isShipSunk(x, y)) {
+            return 'Sunk';
+        }
+
         return 'Hit';
     }
 
@@ -173,10 +209,23 @@ Sea.prototype.bombard = function(x, y) {
 Sea.prototype.shipsByType = function(type) {
     var ships = this.ships[type];
 
-    if (Array.isArray(ships))
+    if (Array.isArray(ships)) {
         return ships
+    }
 
     return [];
+}
+
+Sea.prototype.allShipsSunk = function() {
+    for (var i = 0; i < this.grid.table.length; i++) {
+        for (var j = 0; j < this.grid.table[i].length; j++) {
+            if (this.grid.table[i][j].occupied) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 const ShipAlignment = {

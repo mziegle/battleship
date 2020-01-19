@@ -1,4 +1,4 @@
-const { setWorldConstructor } = require('cucumber')
+const { After, Before, setWorldConstructor } = require('cucumber')
 const Sut = require('../support/sut')
 
 class World {
@@ -17,3 +17,11 @@ class World {
 }
 
 setWorldConstructor(World)
+
+Before(async function (testCase) {
+    await this.requireSut();
+});
+  
+After(async function (testCase) {
+    await this.shutdownSut();
+});

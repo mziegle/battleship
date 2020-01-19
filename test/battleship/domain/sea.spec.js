@@ -50,9 +50,9 @@ describe('Sea', () => {
             var placeShipToANeg1 = () => placeShipHorizontally('A', -1)
             var placeShipToDollar1 = () => placeShipHorizontally('$', 1)
 
-            placeShipToQ55.should.throw('(Q, 55)');
-            placeShipToANeg1.should.throw('(A, -1)');
-            placeShipToDollar1.should.throw('($, 1)');
+            placeShipToQ55.should.throw('Q55');
+            placeShipToANeg1.should.throw('A-1');
+            placeShipToDollar1.should.throw('$1');
         })
 
         it('should throw an error when one ships is placed onto an other', () => {
@@ -60,64 +60,64 @@ describe('Sea', () => {
             var placeShipToD1 = () => placeShipHorizontally('D', 1);
 
             placeShipToA1();
-            placeShipToA1.should.throw('(A, 1)');
-            placeShipToD1.should.throw('(D, 1)');
+            placeShipToA1.should.throw('A1');
+            placeShipToD1.should.throw('D1');
         });
 
         it('should throw an error when one ship is placed directly below an other', () => {
             var placeShipToA2 = () => placeShipHorizontally('A', 2);
             
             placeShipHorizontally('A', 1);
-            placeShipToA2.should.throw('(A, 1)');
+            placeShipToA2.should.throw('A1');
         });
 
         it('should throw an error when one ship is placed directly above an other', () => {
             var placeShipToA1 = () => placeShipHorizontally('A', 1);
             
             placeShipHorizontally('A', 2);
-            placeShipToA1.should.throw('(A, 2)');
+            placeShipToA1.should.throw('A2');
         });
 
         it('should throw an error when one ship is placed directly to the left of an other', () => {
             var placeShipToE1 = () => placeShipVertically('E', 1);
             
             placeShipHorizontally('A', 1);
-            placeShipToE1.should.throw('(D, 1)');
+            placeShipToE1.should.throw('D1');
         });
 
         it('should throw an error when one ship is placed directly to the right of an other', () => {
             var placeShipToB2 = () => placeShipVertically('B', 2);
             
             placeShipVertically('A', 1);
-            placeShipToB2.should.throw('(A, 2)');
+            placeShipToB2.should.throw('A2');
         });
 
         it('should throw an error when one ship is placed directly to the top left of an other', () => {
             var placeShipToA1 = () => placeShipHorizontally('A', 1);
             
             placeShipVertically('E', 2);
-            placeShipToA1.should.throw('(E, 2)');
+            placeShipToA1.should.throw('E2');
         });
 
         it('should throw an error when one ship is placed directly to the top right of an other', () => {
             var placeShipToA2 = () => placeShipVertically('A', 2);
             
             placeShipHorizontally('B', 1);
-            placeShipToA2.should.throw('(B, 1)');
+            placeShipToA2.should.throw('B1');
         });
 
         it('should throw an error when one ship is placed directly to the bottom left of an other', () => {
             var placeShipToB1 = () => placeShipHorizontally('B', 1);
             
             placeShipVertically('A', 2);
-            placeShipToB1.should.throw('(A, 2)');
+            placeShipToB1.should.throw('A2');
         });
 
         it('should throw an error when one ship is placed directly to the bottom right of an other', () => {
             var placeShipToE2 = () => placeShipHorizontally('E', 2);
             
             placeShipHorizontally('A', 1);
-            placeShipToE2.should.throw('(D, 1)');
+            placeShipToE2.should.throw('D1');
         });
     });
 

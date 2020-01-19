@@ -12,6 +12,7 @@ function Game(namePlayer1, namePlayer2) {
     this.activePlayer = this.players[namePlayer1];
     this.inactivePlayer = this.players[namePlayer2];
     this.running = false;
+    this.winner = undefined;
 }
 
 Game.prototype.switchPlayers = function() {
@@ -21,7 +22,8 @@ Game.prototype.switchPlayers = function() {
 }
 
 Game.prototype.placeShip = function(playerName, row, column, ship, alignment) {
-    
+    var fields = [];
+
     if (this.running) {
         throw new Error(`The ${ship} cannot be placed, because the game is already running`);
     }
@@ -36,40 +38,77 @@ Game.prototype.placeShip = function(playerName, row, column, ship, alignment) {
             throw new Error(`The ${ship.type} cannot be placed, because only ${ship.count} ships of this type are allowed`);
         }
 
-        player.sea.placeShip(row, column, ship, alignment);
+        fields = player.sea.placeShip(row, column, ship, alignment);
     } else {
         throw new Error(`Player ${playerName} is not registered for this game`);
     }
+
+    return fields;
 }
 
 Game.prototype.start = function() {
-    this.running = true;
 
-    // TODO check whether all ships are set for each player
+    if (this.winner) {
+        throw new Error(`The game is over, winner is ${this.winner.name}`);
+    }
+
+    if (this.running) {
+        throw new Error(`The game is already running`);
+    }
+
+    [this.activePlayer, this.inactivePlayer].forEach(player => {
+        var countCarriers = player.sea.shipsByType('Carrier').length;
+        var countBattleships = player.sea.shipsByType('Battleship').length;
+        var countDestroyers = player.sea.shipsByType('Destroyer').length;
+        var countSubmarines = player.sea.shipsByType('Submarine').length;
+    
+        if (countCarriers != 1) {
+            throw new Error(`${player.name} needs to place 1 Carrier in order to start the game`);
+        }
+    
+        if (countBattleships != 2) {
+            throw new Error(`${player.name} needs to place 2 Battleships in order to start the game`);
+        }
+    
+        if (countDestroyers != 3) {
+            throw new Error(`${player.name} needs to place 3 Destoryers in order to start the game`);
+        }
+    
+        if (countSubmarines != 4) {
+            throw new Error(`${player.name} needs to place 4 Submarines in order to start the game`);
+        }
+    });
+
+    this.running = true;
 }
 
 Game.prototype.bombard = function(row, column) {
+
     if (!this.running) {
         throw new Error(`It is only possible to fire when the game is running`);
     }
 
+    if (this.winner) {
+        throw new Error(`Cannot bombard, game is already won by ${this.winner.name}`);
+    }
+
     var bombardmentResult = this.inactivePlayer.sea.bombard(row, column);
+
+    if (this.inactivePlayer.sea.allShipsSunk()) {
+        this.winner = this.activePlayer;
+    }
 
     switch (bombardmentResult) {
         case 'Hit':
-            console.log(`Ship at (${row},${column}) was hit`);
             break;
 
         case 'Water':
-            console.log(`Bomb fell in the water at (${row},${column})`);
-            this.switchPlayers();
-            break;
-
         case 'Sunk':
-            console.log(`Ship at (${row},${column}) was sunk`);
             this.switchPlayers();
             break;
     }
+
+    return bombardmentResult;
 }
 
 module.exports = {
