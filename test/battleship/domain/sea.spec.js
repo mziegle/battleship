@@ -1,6 +1,6 @@
 var should = require('chai').should()
 var Sea = require('../../../src/battleship/domain/sea').Sea;
-var ShipAlignment = require('../../../src/battleship/domain/sea').ShipAlignment;
+var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
 var Battleship = require('../../../src/battleship/domain/ship').Battleship;
 
 describe('Sea', () => {

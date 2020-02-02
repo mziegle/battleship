@@ -22,9 +22,31 @@ function Submarine() {
     this.count = 4;
 }
 
+const shipConfigs = [
+    { type: 'Carrier', size: 5, count: 1 },
+    { type: 'Battleship', size: 4, count: 2 },
+    { type: 'Destroyer', size: 3, count: 3 },
+    { type: 'Submarine', size: 2, count: 4 }
+]
+
+class Ship {
+    constructor(type, size, count) {
+        this.type = type;
+        this.size = size;
+        this.count = count;
+    }
+}
+
+const ShipAlignment = {
+    horizontally: 1,
+    vertically: 2
+}
+
 module.exports = {
     Carrier: Carrier,
     Battleship: Battleship,
     Destroyer: Destroyer,
-    Submarine: Submarine
+    Submarine: Submarine,
+    ShipAlignment: ShipAlignment,
+    shipConfigs: shipConfigs
 }

@@ -1,5 +1,6 @@
 
 var Manager = require('./application/manager').Manager;
+var StateError = require('./domain/game').StateError;
 var express = require('express');
 var app = express();
 var port = 8080;
@@ -52,6 +53,30 @@ app.put('/games/:id/:player/sea/:x/:y', (request, response) => {
         
         response.statusCode = 400;
         response.write(error.message);
+    }
+
+    response.end();
+});
+
+app.put('/games/:id/state', (request, response) => {
+    var gameId = parseInt(request.params.id);
+    var start = request.body.start;
+
+    if (start) {
+        try {
+            manager.start(gameId);
+
+            response.statusCode = 200;
+        } catch (error) {
+            if (error instanceof StateError) {
+                response.statusCode = 400;
+                response.write(JSON.stringify({
+                    type: error.name,
+                    message: error.message,
+                    details: error.details
+                }));
+            }
+        }
     }
 
     response.end();

@@ -1,7 +1,7 @@
 var should = require('chai').should()
 var Game = require('../../../src/battleship/domain/game').Game;
 var Sea = require('../../../src/battleship/domain/sea').Sea;
-var ShipAlignment = require('../../../src/battleship/domain/sea').ShipAlignment;
+var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
 var Battleship = require('../../../src/battleship/domain/ship').Battleship;
 var Carrier = require('../../../src/battleship/domain/ship').Carrier;
 var Destroyer = require('../../../src/battleship/domain/ship').Destroyer;
@@ -53,7 +53,7 @@ describe('Game', () => {
     
             var start = () => game.start();
     
-            start.should.throw(PLAYER_2);
+            start.should.throw();
         });
     });
 

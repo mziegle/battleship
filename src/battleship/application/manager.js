@@ -4,7 +4,7 @@ var Carrier = require('../domain/ship').Carrier;
 var Battleship = require('../domain/ship').Battleship;
 var Destroyer = require('../domain/ship').Destroyer;
 var Submarine = require('../domain/ship').Submarine;
-var ShipAlignment = require('../domain/sea').ShipAlignment;
+var ShipAlignment = require('../domain/ship').ShipAlignment;
 
 class Manager {
     constructor() {
@@ -56,6 +56,12 @@ class Manager {
         var fields = game.placeShip(player, x, y, ship, alignment);
 
         return fields.map(field => field.toString());
+    }
+
+    start(gameId) {
+        var game = this.games.get(gameId);
+
+        game.start();
     }
 }
 
