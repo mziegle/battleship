@@ -82,10 +82,26 @@ app.put('/games/:id/state', (request, response) => {
     response.end();
 });
 
-app.delete('/games/:id/:x/:y', (request, response) => {
-    request.params.id;
-    request.params.x;
-    request.params.y;
+app.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => {
+    const gameId = parseInt(request.params.gameId);
+    const player = request.params.player;
+    const row = request.params.row;
+    const column = request.params.column;
+
+    try {
+        manager.fire(gameId, player, row, column);
+    } catch (error) {
+        if (error instanceof StateError) {
+            response.statusCode = 400;
+            response.write(JSON.stringify({
+                type: error.name,
+                message: error.message,
+                details: error.details
+            }));
+        }
+    }
+    
+    response.end();
 });
 
 app.listen(port, () => {

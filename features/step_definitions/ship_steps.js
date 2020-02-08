@@ -13,6 +13,28 @@ class Field {
     }
 }
 
+var fireRequest = function(gameId, player, field) {
+    return {
+        method: 'DELETE',
+        uri: URL + `/games/${gameId}/${player}/sea/${field.row}/${field.column}`,
+        headers: {
+            'content-type': 'application/json'
+        },
+        json: true,
+        resolveWithFullResponse: true
+    };
+}
+
+var fire = async function(attacker, fieldName, victim) {
+    var field = parseField(fieldName);
+    try {
+        this.response = await request(fireRequest(this.gameId, victim, field))
+    } catch (statusCodeError) {
+        // check if really a status code error has been thrown
+        this.statusCodeError = statusCodeError;
+    }
+}
+
 var parseField = function(fieldName) {
     return new Field(fieldName.charAt(0), fieldName.charAt(fieldName.length - 1))
 }
@@ -81,3 +103,5 @@ var createSetShipRequest = function(gameId, player, row, column, shipType, align
         resolveWithFullResponse: true
     };
 }
+
+When('{word} requests fire at {word} of {word} sea', fire)

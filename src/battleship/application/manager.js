@@ -63,6 +63,16 @@ class Manager {
 
         game.start();
     }
+
+    fire(gameId, player, row, column) {
+        var game = this.games.get(gameId);
+
+        if (game.getInactivePlayerName() !== player) {
+            throw new Error(`It's not player ${player}s turn`);
+        }
+
+        game.bombard(row, column);
+    }
 }
 
 module.exports = {

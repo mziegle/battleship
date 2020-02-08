@@ -29,6 +29,10 @@ class Game {
         this.winner = undefined;
     }
 
+    getInactivePlayerName() {
+        return this.inactivePlayer.name;
+    }
+
     switchPlayers() {
         var tmp = this.activePlayer;
         this.activePlayer = this.inactivePlayer;
@@ -116,7 +120,7 @@ class Game {
     bombard(row, column) {
 
         if (!this.running) {
-            throw new Error(`It is only possible to fire when the game is running`);
+            throw new StateError('The game has not been started yet', {});
         }
     
         if (this.winner) {

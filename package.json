@@ -13,7 +13,7 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.2.0",
-    "concurrently": "^5.0.2",
+    "concurrently": "^5.1.0",
     "cucumber": "^6.0.5",
     "cucumber-pretty": "^6.0.0",
     "mocha": "^6.2.2",

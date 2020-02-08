@@ -44,6 +44,7 @@ var startGame = async function() {
     try {
         this.response = await request(startGameRequest(this.gameId));
     } catch (statusCodeError) {
+        // check if really a status code error has been thrown
         this.statusCodeError = statusCodeError;
     }
 }
@@ -69,12 +70,11 @@ var verifyErrorMessageDetails = function(docString) {
 
 Given('a new battleship match between {word} and {word} has been created', createGame)
 Given('a new battleship match between {word} and {word} has been requested', createGame);
-When('a new battleship match between {word} and {word} is requested', createGame);
 
+When('a new battleship match between {word} and {word} is requested', createGame);
 When('the start of the game is requested', startGame);
 
 Then('a new game is created', verifyGameCreated);
-
 Then('the requestor receives an error message', verifyErrorMessage);
 Then('the details show the ships left to be placed', verifyErrorMessageDetails)
 

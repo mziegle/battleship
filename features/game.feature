@@ -31,13 +31,12 @@ Feature: Game
         }
       """
 
-  @skip
   Scenario: Player fires although the game has not yet started
     Given a new battleship match between player1 and player2 has been created
-    When player1 requests fire at A1
+    When player1 requests fire at A1 of player2 sea
     Then the requestor receives an error message
-      | error       | message                           |
-      | Bad Request | The game has not been started yet |
+      | type        | message                           |
+      | State Error | The game has not been started yet |
 
   @skip
   Scenario: Players are finished with placing ships
