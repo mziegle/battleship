@@ -1,5 +1,6 @@
 const { After, Before, setWorldConstructor } = require('cucumber')
 const Sut = require('../support/sut')
+const BattleshipServer = require('./service').BattleshipServer
 
 class World {
 
@@ -20,6 +21,7 @@ setWorldConstructor(World)
 
 Before(async function (testCase) {
     await this.requireSut();
+    this.battleshipServer = new BattleshipServer();
 });
   
 After(async function (testCase) {

@@ -1,19 +1,11 @@
 var Sea = require('./sea').Sea;
 var shipConfigs = require('./ship').shipConfigs;
+var DomainError = require('./error').DomainError;
 
 class Player {
     constructor(name, sea) {
         this.name = name;
         this.sea = sea;
-    }
-}
-
-class StateError extends Error {
-    constructor(message, details) {
-        super(message);
-
-        this.name = 'State Error';
-        this.details = details;
     }
 }
 
@@ -43,7 +35,7 @@ class Game {
         var fields = [];
     
         if (this.running) {
-            throw new Error(`The ${ship} cannot be placed, because the game is already running`);
+            throw new DomainError(`The ${ship} cannot be placed, because the game is already running`, {});
         }
     
         var player = this.players[playerName];
@@ -53,12 +45,15 @@ class Game {
     
             if (countShipsPlaced >= ship.count)
             {
-                throw new Error(`The ${ship.type} cannot be placed, because only ${ship.count} ships of this type are allowed`);
+                throw new DomainError('Ship type exhausted', {
+                    type: ship.type,
+                    count: ship.count
+                });
             }
     
             fields = player.sea.placeShip(row, column, ship, alignment);
         } else {
-            throw new Error(`Player ${playerName} is not registered for this game`);
+            throw new DomainError(`Player ${playerName} is not registered for this game`, {});
         }
     
         return fields;
@@ -67,11 +62,11 @@ class Game {
     start() {
 
         if (this.winner) {
-            throw new Error(`The game is over, winner is ${this.winner.name}`);
+            throw new DomainError(`The game is over, winner is ${this.winner.name}`, {});
         }
     
         if (this.running) {
-            throw new Error(`The game is already running`);
+            throw new DomainError(`The game is already running`, {});
         }
 
         this.enforceAllShipsPlaced();
@@ -96,7 +91,7 @@ class Game {
         });
 
         if (details) {
-            throw new StateError('Not all ships were placed', details);
+            throw new DomainError('Not all ships were placed', details);
         }
     }
 
@@ -120,11 +115,12 @@ class Game {
     bombard(row, column) {
 
         if (!this.running) {
-            throw new StateError('The game has not been started yet', {});
+            throw new DomainError('The game has not been started yet', {});
         }
     
         if (this.winner) {
-            throw new Error(`Cannot bombard, game is already won by ${this.winner.name}`);
+            throw new DomainError(`Cannot bombard, game is already won by ${this.winner.name}`,
+                { winner: this.winner.name });
         }
     
         var bombardmentResult = this.inactivePlayer.sea.bombard(row, column);
@@ -134,11 +130,11 @@ class Game {
         }
     
         switch (bombardmentResult) {
-            case 'Hit':
+            case 'hit':
                 break;
     
-            case 'Water':
-            case 'Sunk':
+            case 'water':
+            case 'sunk':
                 this.switchPlayers();
                 break;
         }
@@ -148,6 +144,5 @@ class Game {
 }
 
 module.exports = {
-    Game: Game,
-    StateError: StateError
+    Game: Game
 }

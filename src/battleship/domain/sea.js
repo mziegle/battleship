@@ -1,4 +1,5 @@
 var ShipAlignment = require('./ship').ShipAlignment;
+var DomainError = require('./error').DomainError;
 
 const GRID_SIZE = 10;
 
@@ -49,13 +50,13 @@ class Sea {
             this.destory(x, y);
     
             if (this.isShipSunk(x, y)) {
-                return 'Sunk';
+                return 'sunk';
             }
     
-            return 'Hit';
+            return 'hit';
         }
     
-        return 'Water';
+        return 'water';
     }
     
     shipsByType(type) {
@@ -142,7 +143,8 @@ class Grid {
     enforceFieldsFree(fields) {
         fields.forEach(field => {
             if (field.occupied) {
-                throw new RangeError(`Area ${field.toString()} is already occupied`);
+                throw new DomainError(`Area ${field.toString()} is already occupied`, 
+                    { field: field.toString() });
             }
         });
     }
@@ -151,7 +153,8 @@ class Grid {
         fields.forEach(field => {
             this.getAdjacentFields(field).forEach(neighbor => {
                 if (neighbor.occupied) {
-                    throw new Error(`Adjacent area ${neighbor.toString()} is occupied`);
+                    throw new DomainError(`Adjacent area ${neighbor.toString()} is occupied`, 
+                        { neighbor: neighbor.toString() });
                 }
             })
         });
@@ -167,6 +170,7 @@ class Grid {
         var bottomLeft = this.getGridField(field.x - 1, field.y + 1);
         var bottomRight = this.getGridField(field.x + 1, field.y + 1);
     
+        // Make clear it is an undefined check
         return [top, bottom, left, right, topLeft, topRight, bottomLeft, bottomRight]
             .filter(neighbor => neighbor);
     }
@@ -199,7 +203,9 @@ class Grid {
     
     enforcePositionInGrid(x, y) {
         if (!this.isPositionInGrid(x, y)) {
-            throw new RangeError(`Area ${new Field(x, y).toString()} is not in sea`);
+            const fieldName = new Field(x, y).toString();
+
+            throw new DomainError(`Area ${fieldName} is not in sea`, { field: fieldName});
         }
     }
     

@@ -1,107 +1,79 @@
 var should = require('chai').should()
-const assert = require('assert');
 const {When, Given, Then} = require('cucumber');
-const request = require('request-promise');
 
-const URL = 'http://localhost:8080';
-const freeFields = ['A1', 'A3', 'A5', 'A7', 'A9'];
+const placeShip = async function(player, shipType, fieldName, alignment) {
+    this.response = await this.battleshipServer.placeShip(this.gameId, player, shipType, fieldName, alignment);
+}
 
-class Field {
-    constructor(row, column) {
-        this.row = row;
-        this.column = column;
+const placeShipHorizontally = async function(player, shipType, fieldName) {
+    this.response = await this.battleshipServer.placeShip(this.gameId, player, shipType, fieldName, 'horizontally');
+}
+
+const placeShipSomewhere = async function(player, shipType) {
+    this.response = await this.battleshipServer.placeShip(this.gameId, player, shipType, 'E10', 'horizontally');
+}
+
+const placeNShipsOfType = async function(player, count, shipType) {
+    await this.battleshipServer.placeNShipsOfType(this.gameId, player, shipType, count);
+}
+
+const placeShips = async function(table) {
+    var shipPlacement = new Map();
+
+    for (row of table.rows()) {
+        shipPlacement.set(row[0], row[2]);
+    }
+
+    await this.battleshipServer.placeAllShips(this.gameId, shipPlacement);
+}
+
+const placeAllShips = async function() {
+    await this.battleshipServer.placeAllShips(this.gameId);
+}
+
+const fire = async function(attacker, fieldName, victim) {
+    this.response = await this.battleshipServer.fire(this.gameId, fieldName, victim);
+}
+
+const volley = async function(attacker, victim, table) {
+    for (row of table.rows()) {
+        await this.battleshipServer.fire(this.gameId, row[0], victim);
     }
 }
 
-var fireRequest = function(gameId, player, field) {
-    return {
-        method: 'DELETE',
-        uri: URL + `/games/${gameId}/${player}/sea/${field.row}/${field.column}`,
-        headers: {
-            'content-type': 'application/json'
-        },
-        json: true,
-        resolveWithFullResponse: true
-    };
+const sinkAllShips = async function(attacker, victim) {
+    return 'pending'
 }
 
-var fire = async function(attacker, fieldName, victim) {
-    var field = parseField(fieldName);
-    try {
-        this.response = await request(fireRequest(this.gameId, victim, field))
-    } catch (statusCodeError) {
-        // check if really a status code error has been thrown
-        this.statusCodeError = statusCodeError;
-    }
+const checkShipNotSet = function() {
+    this.response.statusCode.should.equal(400);
 }
 
-var parseField = function(fieldName) {
-    return new Field(fieldName.charAt(0), fieldName.charAt(fieldName.length - 1))
-}
-
-Given('{word} has set a {word} to {word}', async function (player, shipType, fieldName) {
-    var field = parseField(fieldName);
-
-    this.response = await request(createSetShipRequest(this.gameId, player, field.row, field.column, shipType, 'horizontally'));
-});
-
-When('{word} sets a {word} to {word}', async function (player, shipType, fieldName) {
-    var field = parseField(fieldName);
-    
-    try {
-        this.response = await request(createSetShipRequest(this.gameId, player, field.row, field.column, shipType, 'horizontally'));
-    } catch (statusCodeError) {
-        this.statusCodeError = statusCodeError;
-    }
-});
-
-When('{word} sets a {word} to {word} {word}', async function (player, shipType, fieldName, alignment) {
-    var field = parseField(fieldName);
-    
-    this.response = await request(createSetShipRequest(this.gameId, player, field.row, field.column, shipType, alignment));
-});
-
-Given('{word} has set {int} {word}', async function (player, count, shipType) {
-    for (const fieldName of freeFields.slice(0, count)) {
-        var field = parseField(fieldName);
-    
-        await request(createSetShipRequest(this.gameId, player, field.row, field.column, shipType, 'horizontally'));
-    }
-});
-
-When('{word} sets a {word}', async function (player, shipType) {
-    try {
-        this.response = await request(createSetShipRequest(this.gameId, player, 'E', 10, shipType, 'horizontally'));
-    } catch (statusCodeError) {
-        this.statusCodeError = statusCodeError;
-    }
-});
-
-Then('the ship is not set', function () {
-    this.statusCodeError.statusCode.should.equal(400);
-});
-
-Then('the ship occupies the fields {word} to {word}', async function(begin, end) {
+const checkShipOccupiesFields = async function(begin, end) {
     var fields = this.response.body.fields;
-
+    
     fields[0].should.equal(begin);
     fields[fields.length - 1].should.equal(end);
-});
-
-var createSetShipRequest = function(gameId, player, row, column, shipType, alignment) {
-    return {
-        method: 'PUT',
-        uri: URL + `/games/${gameId}/${player}/sea/${row}/${column}`,
-        body: {
-            shipType: shipType,
-            alignment: alignment
-        },
-        headers: {
-            'content-type': 'application/json'
-        },
-        json: true,
-        resolveWithFullResponse: true
-    };
 }
 
+const checkFireResult = async function(result) {
+    this.response.statusCode.should.equal(200);
+    this.response.body.result.should.equal(result);
+}
+
+Given('{word} has set {int} {word}', placeNShipsOfType);
+Given('{word} has set a {word} to {word}', placeShipHorizontally);
+Given('the players have set all their ships', placeAllShips);
+Given('both players have placed their ships as follows', placeShips)
+Given('{word} has fired at the following areas of {word} sea', volley)
+
+When('{word} sets a {word}', placeShipSomewhere);
+When('{word} sets a {word} to {word} {word}', placeShip);
 When('{word} requests fire at {word} of {word} sea', fire)
+When('{word} sunk the last ship of {word}', sinkAllShips)
+When('{word} sets a {word} to {word}', placeShipHorizontally);
+
+Then('the ship is not set', checkShipNotSet);
+Then('the ship occupies the fields {word} to {word}', checkShipOccupiesFields);
+Then('only {word} is hit', checkFireResult);
+Then('the ship is {word}', checkFireResult);

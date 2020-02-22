@@ -68,10 +68,10 @@ class Manager {
         var game = this.games.get(gameId);
 
         if (game.getInactivePlayerName() !== player) {
-            throw new Error(`It's not player ${player}s turn`);
+            throw new DomainError(`It's not ${player}s turn`, {});
         }
 
-        game.bombard(row, column);
+        return game.bombard(row, column);
     }
 }
 

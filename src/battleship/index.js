@@ -1,6 +1,6 @@
 
 var Manager = require('./application/manager').Manager;
-var StateError = require('./domain/game').StateError;
+var DomainError = require('./domain/error').DomainError;
 var express = require('express');
 var app = express();
 var port = 8080;
@@ -50,9 +50,12 @@ app.put('/games/:id/:player/sea/:x/:y', (request, response) => {
         response.statusCode = 200;
 
     } catch (error) {
-        
-        response.statusCode = 400;
-        response.write(error.message);
+        if (error instanceof DomainError) {
+            response.statusCode = 400;
+            response.write(error.message);
+        } else {
+            throw error;
+        }
     }
 
     response.end();
@@ -68,13 +71,15 @@ app.put('/games/:id/state', (request, response) => {
 
             response.statusCode = 200;
         } catch (error) {
-            if (error instanceof StateError) {
+            if (error instanceof DomainError) {
                 response.statusCode = 400;
                 response.write(JSON.stringify({
                     type: error.name,
                     message: error.message,
                     details: error.details
                 }));
+            } else {
+                throw error;
             }
         }
     }
@@ -89,15 +94,22 @@ app.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => {
     const column = request.params.column;
 
     try {
-        manager.fire(gameId, player, row, column);
+        var fireResult = manager.fire(gameId, player, row, column);
+        
+        response.statusCode = 200;
+        response.write(JSON.stringify({
+            result: fireResult
+        }));
     } catch (error) {
-        if (error instanceof StateError) {
+        if (error instanceof DomainError) {
             response.statusCode = 400;
             response.write(JSON.stringify({
                 type: error.name,
                 message: error.message,
                 details: error.details
             }));
+        } else {
+            throw error;
         }
     }
     

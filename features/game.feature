@@ -12,8 +12,8 @@ Feature: Game
     And player1 has set a carrier to A1
     When the start of the game is requested
     Then the requestor receives an error message
-      | type        | message                   |
-      | State Error | Not all ships were placed |
+      | type         | message                   |
+      | Domain Error | Not all ships were placed |
     And the details show the ships left to be placed
       """
         {
@@ -35,18 +35,16 @@ Feature: Game
     Given a new battleship match between player1 and player2 has been created
     When player1 requests fire at A1 of player2 sea
     Then the requestor receives an error message
-      | type        | message                           |
-      | State Error | The game has not been started yet |
+      | type         | message                           |
+      | Domain Error | The game has not been started yet |
 
-  @skip
   Scenario: Players are finished with placing ships
     Given a new battleship match between player1 and player2 has been created
     And the players have set all their ships
     When the start of the game is requested
     Then the game is started
   
-  @skip
   Scenario: A players last ship was sunk
     Given player1 and player2 have started a game
-    When player1 sunk the last ship of player 2
+    When player1 sunk the last ship of player2
     Then player1 wins
