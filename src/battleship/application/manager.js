@@ -5,6 +5,7 @@ var Battleship = require('../domain/ship').Battleship;
 var Destroyer = require('../domain/ship').Destroyer;
 var Submarine = require('../domain/ship').Submarine;
 var ShipAlignment = require('../domain/ship').ShipAlignment;
+var DomainError = require('../domain/error').DomainError;
 
 class Manager {
     constructor() {
@@ -68,7 +69,7 @@ class Manager {
         var game = this.games.get(gameId);
 
         if (game.getInactivePlayerName() !== player) {
-            throw new DomainError(`It's not ${player}s turn`, {});
+            throw new DomainError(`It's not ${game.getInactivePlayerName()}s turn`, {});
         }
 
         return game.bombard(row, column);

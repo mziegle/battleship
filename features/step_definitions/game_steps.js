@@ -13,6 +13,7 @@ const startGame = async function() {
 const createAndStartGame = async function(player1, player2) {
     this.response = await this.battleshipServer.createGame(player1, player2);
     this.gameId = this.response.body.id;
+    this.response = await this.battleshipServer.placeAllShips(this.gameId);
     this.response = await this.battleshipServer.startGame(this.gameId);
 }
 
@@ -24,6 +25,10 @@ const verifyGameCreated = function() {
 
 const verifyGameStarted = function() {
     this.response.statusCode.should.equal(200);
+}
+
+const verifyGameWon = function(winner) {
+    this.response.body.result.winner.should.equal(winner);
 }
 
 const verifyErrorMessage = function(table) {
@@ -52,4 +57,5 @@ Then('a new game is created', verifyGameCreated);
 Then('the requestor receives an error message', verifyErrorMessage);
 Then('the details show the ships left to be placed', verifyErrorMessageDetails)
 Then('the game is started', verifyGameStarted);
+Then('{word} wins', verifyGameWon)
 

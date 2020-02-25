@@ -42,7 +42,8 @@ const volley = async function(attacker, victim, table) {
 }
 
 const sinkAllShips = async function(attacker, victim) {
-    return 'pending'
+    this.response = await this.battleshipServer.sinkAllShips(this.gameId, victim, attacker);
+    console.log(this.response.body);
 }
 
 const checkShipNotSet = function() {
@@ -58,7 +59,7 @@ const checkShipOccupiesFields = async function(begin, end) {
 
 const checkFireResult = async function(result) {
     this.response.statusCode.should.equal(200);
-    this.response.body.result.should.equal(result);
+    this.response.body.result.hits.should.equal(result);
 }
 
 Given('{word} has set {int} {word}', placeNShipsOfType);

@@ -25,6 +25,10 @@ class Game {
         return this.inactivePlayer.name;
     }
 
+    getActivePlayerName() {
+        return this.activePlayer.name;
+    }
+
     switchPlayers() {
         var tmp = this.activePlayer;
         this.activePlayer = this.inactivePlayer;
@@ -122,13 +126,15 @@ class Game {
             throw new DomainError(`Cannot bombard, game is already won by ${this.winner.name}`,
                 { winner: this.winner.name });
         }
-    
+        
+        var result = {};
         var bombardmentResult = this.inactivePlayer.sea.bombard(row, column);
-    
+        
         if (this.inactivePlayer.sea.allShipsSunk()) {
             this.winner = this.activePlayer;
+            result.winner = this.winner.name;
         }
-    
+
         switch (bombardmentResult) {
             case 'hit':
                 break;
@@ -139,7 +145,9 @@ class Game {
                 break;
         }
     
-        return bombardmentResult;
+        result.hits = bombardmentResult;
+
+        return result;
     }
 }
 
