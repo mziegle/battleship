@@ -21,6 +21,20 @@ class Game {
         this.winner = undefined;
     }
 
+    getState() {
+        var result = {
+            running: this.running,
+            activePlayer: this.getActivePlayerName(),
+            inactivePlayer: this.getInactivePlayerName()
+        }
+
+        if (this.winner) {
+            result.winner = this.winner.name;
+        }
+
+        return result;
+    }
+
     getInactivePlayerName() {
         return this.inactivePlayer.name;
     }

@@ -1,4 +1,5 @@
-var should = require('chai').should()
+require('chai').should()
+
 const {When, Given, Then} = require('cucumber');
 
 const placeShip = async function(player, shipType, fieldName, alignment) {
@@ -41,9 +42,24 @@ const volley = async function(attacker, victim, table) {
     }
 }
 
+const hitWater = async function(attacker) {
+    this.response = await this.battleshipServer.fire(this.gameId, 'J10', 'player2');
+    this.response.body.result.hits.should.equal('water');
+}
+
+const hitShip = async function(attacker) {
+    this.response = await this.battleshipServer.fire(this.gameId, 'A1', 'player2');
+    this.response.body.result.hits.should.equal('hit');
+}
+
+const sinkShip = async function(attacker) {
+    this.response = await this.battleshipServer.sinkShip(this.gameId, 
+        'player2', this.battleshipServer.anyShipPlacement());
+    this.response.body.result.hits.should.equal('sunk');
+}
+
 const sinkAllShips = async function(attacker, victim) {
     this.response = await this.battleshipServer.sinkAllShips(this.gameId, victim, attacker);
-    console.log(this.response.body);
 }
 
 const checkShipNotSet = function() {
@@ -66,13 +82,16 @@ Given('{word} has set {int} {word}', placeNShipsOfType);
 Given('{word} has set a {word} to {word}', placeShipHorizontally);
 Given('the players have set all their ships', placeAllShips);
 Given('both players have placed their ships as follows', placeShips)
-Given('{word} has fired at the following areas of {word} sea', volley)
+Given('{word} has fired at the following areas of {word}s sea', volley)
 
 When('{word} sets a {word}', placeShipSomewhere);
 When('{word} sets a {word} to {word} {word}', placeShip);
-When('{word} requests fire at {word} of {word} sea', fire)
+When('{word} fires at {word} of {word}s sea', fire)
 When('{word} sunk the last ship of {word}', sinkAllShips)
 When('{word} sets a {word} to {word}', placeShipHorizontally);
+When('{word} hits water', hitWater);
+When('{word} hits a ship', hitShip);
+When('{word} sinks a ship', sinkShip)
 
 Then('the ship is not set', checkShipNotSet);
 Then('the ship occupies the fields {word} to {word}', checkShipOccupiesFields);

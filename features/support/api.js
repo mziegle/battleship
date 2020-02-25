@@ -31,6 +31,18 @@ var createGame = function(url, player1, player2) {
     };
 }
 
+var gameStatus = function(url, gameId) {
+    return {
+        method: 'GET',
+        uri: `${url}/games/${gameId}/state`,
+        headers: {
+            'content-type': 'application/json'
+        },
+        json: true,
+        resolveWithFullResponse: true
+    }
+}
+
 var startGame = function(url, gameId) {
     return {
         method: 'PUT',
@@ -62,5 +74,6 @@ module.exports = {
     placeShip: placeShip,
     createGame: createGame,
     startGame: startGame,
+    gameStatus: gameStatus,
     fire: fire
 }

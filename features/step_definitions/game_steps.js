@@ -1,4 +1,5 @@
-var should = require('chai').should()
+require('chai').should()
+
 const {When, Given, Then} = require('cucumber');
 
 const createGame = async function(player1, player2) {
@@ -45,6 +46,11 @@ const verifyErrorMessageDetails = function(docString) {
     this.response.error.details.should.deep.equal(shipsLeftToSet);
 }
 
+const verifyWhoseTurn = async function(player) {
+    this.response = await this.battleshipServer.checkStatus(this.gameId);
+    this.response.body.activePlayer.should.equal(player);
+}
+
 Given('a new battleship match between {word} and {word} has been created', createGame)
 Given('a new battleship match between {word} and {word} has been requested', createGame);
 Given('the match has been started', startGame);
@@ -58,4 +64,5 @@ Then('the requestor receives an error message', verifyErrorMessage);
 Then('the details show the ships left to be placed', verifyErrorMessageDetails)
 Then('the game is started', verifyGameStarted);
 Then('{word} wins', verifyGameWon)
-
+Then('it is {word}s turn', verifyWhoseTurn)
+Then('{word} is allowed to fire again', verifyWhoseTurn)

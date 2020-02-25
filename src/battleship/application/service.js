@@ -7,7 +7,7 @@ var Submarine = require('../domain/ship').Submarine;
 var ShipAlignment = require('../domain/ship').ShipAlignment;
 var DomainError = require('../domain/error').DomainError;
 
-class Manager {
+class ApplicationService {
     constructor() {
         this.games = new Map();
         this.counter = 0;
@@ -17,6 +17,10 @@ class Manager {
         this.games.set(this.counter, new Game(player1, player2));
 
         return this.counter++; 
+    }
+
+    gameState(gameId) {
+        return this.games.get(gameId).getState();
     }
 
     placeShip(gameId, player, x, y, shipType, shipAlignment) {
@@ -77,5 +81,5 @@ class Manager {
 }
 
 module.exports = {
-    Manager: Manager
+    ApplicationService: ApplicationService
 }

@@ -38,6 +38,10 @@ class BattleshipServer {
         this.games = new Map();
     }
 
+    async checkStatus(gameId) {
+        return await request(api.gameStatus(this.url, gameId));
+    }
+
     async createGame(player1, player2) {
         const response =  await request(api.createGame(this.url, player1, player2));
         const gameId = response.body.id;
@@ -112,6 +116,10 @@ class BattleshipServer {
         }
 
         return lastResponse;
+    }
+
+    anyShipPlacement() {
+        return this.defaultShipPlacements[0];
     }
 }
 

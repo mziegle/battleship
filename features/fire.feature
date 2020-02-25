@@ -20,19 +20,19 @@ Feature: Fire
     And the match has been started
 
   Scenario: Ship is missed
-    When player1 requests fire at A2 of player2 sea
+    When player1 fires at A2 of player2s sea
     Then only water is hit
 
   Scenario: Ship is hit
-    When player1 requests fire at A1 of player2 sea
+    When player1 fires at A1 of player2s sea
     Then the ship is hit
 
   Scenario: Ship is hit on all parts
-    Given player1 has fired at the following areas of player2 sea
+    Given player1 has fired at the following areas of player2s sea
       | field |
       | A1    |
       | B1    |
       | C1    |
       | D1    |
-    When player1 requests fire at E1 of player2 sea
+    When player1 fires at E1 of player2s sea
     Then the ship is sunk
