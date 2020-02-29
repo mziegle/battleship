@@ -18,15 +18,15 @@ Feature: Game
       """
         {
           "player1": {
-            "Battleship": 2,
-            "Destroyer": 3,
-            "Submarine": 4
+            "battleship": 2,
+            "destroyer": 3,
+            "submarine": 4
           },
           "player2": {
-            "Carrier": 1,
-            "Battleship": 2,
-            "Destroyer": 3,
-            "Submarine": 4
+            "carrier": 1,
+            "battleship": 2,
+            "destroyer": 3,
+            "submarine": 4
           }
         }
       """

@@ -1,21 +1,22 @@
 
 var Game = require('../domain/game').Game;
-var Carrier = require('../domain/ship').Carrier;
-var Battleship = require('../domain/ship').Battleship;
-var Destroyer = require('../domain/ship').Destroyer;
-var Submarine = require('../domain/ship').Submarine;
 var ShipAlignment = require('../domain/ship').ShipAlignment;
 var DomainError = require('../domain/error').DomainError;
+var ShipFactory = require('../domain/ship').ShipFactory;
 
 class ApplicationService {
-    constructor() {
+
+    constructor(allowedShips) {
         this.games = new Map();
         this.counter = 0;
+        this.allowedShips = allowedShips;
+        this.shipFactory = new ShipFactory(allowedShips); 
     }
 
     newGame(player1, player2) {
-        this.games.set(this.counter, new Game(player1, player2));
+        const game = new Game(player1, player2, this.allowedShips);
 
+        this.games.set(this.counter, game);
         return this.counter++; 
     }
 
@@ -25,26 +26,8 @@ class ApplicationService {
 
     placeShip(gameId, player, x, y, shipType, shipAlignment) {
         var game = this.games.get(gameId);
-        var ship;
+        var ship = this.shipFactory.create(shipType);
         var alignment;
-
-        switch (shipType) {
-            case 'carrier':
-                ship = new Carrier();
-                break;
-            case 'battleship':
-                ship = new Battleship();
-                break;
-            case 'destroyer':
-                ship = new Destroyer();
-                break;
-            case 'submarine':
-                ship = new Submarine();
-                break;
-            default:
-                // TODO Error
-                break;
-        }
 
         switch (shipAlignment) {
             case 'horizontally':

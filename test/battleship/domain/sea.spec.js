@@ -1,16 +1,18 @@
 var should = require('chai').should()
 var Sea = require('../../../src/battleship/domain/sea').Sea;
 var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-var Battleship = require('../../../src/battleship/domain/ship').Battleship;
+var Ship = require('../../../src/battleship/domain/ship').Ship;
 
 describe('Sea', () => {
     var sea;
     var placeShipHorizontally;
+    var battleship;
 
     beforeEach(() => {
         sea = new Sea();
-        placeShipHorizontally = (x, y) => sea.placeShip(x, y, new Battleship(), ShipAlignment.horizontally)
-        placeShipVertically = (x, y) => sea.placeShip(x, y, new Battleship(), ShipAlignment.vertically)
+        placeShipHorizontally = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.horizontally);
+        placeShipVertically = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.vertically);
+        battleship = () => new Ship('battleship', 4, 2);
     });
 
     describe('#Sea()', () => {
@@ -28,7 +30,7 @@ describe('Sea', () => {
 
     describe('#placeShip()', () => {
         it('should place a ship horizontally', () => {
-            sea.placeShip('A', 1, new Battleship(), ShipAlignment.horizontally);
+            sea.placeShip('A', 1, battleship(), ShipAlignment.horizontally);
 
             sea.isHit('A', 1).should.be.true;
             sea.isHit('B', 1).should.be.true;
@@ -37,7 +39,7 @@ describe('Sea', () => {
         })
 
         it('should place a ship vertically', () => {
-            sea.placeShip('A', 1, new Battleship(), ShipAlignment.vertically);
+            sea.placeShip('A', 1, battleship(), ShipAlignment.vertically);
 
             sea.isHit('A', 1).should.be.true;
             sea.isHit('A', 2).should.be.true;

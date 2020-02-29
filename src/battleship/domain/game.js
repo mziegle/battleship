@@ -1,5 +1,4 @@
 var Sea = require('./sea').Sea;
-var shipConfigs = require('./ship').shipConfigs;
 var DomainError = require('./error').DomainError;
 
 class Player {
@@ -10,11 +9,11 @@ class Player {
 }
 
 class Game {
-
-    constructor(namePlayer1, namePlayer2) {
+    constructor(namePlayer1, namePlayer2, allowedShips) {
         this.players = {};
         this.players[namePlayer1] = new Player(namePlayer1, new Sea());
         this.players[namePlayer2] = new Player(namePlayer2, new Sea());
+        this.allowedShips = allowedShips;
         this.activePlayer = this.players[namePlayer1];
         this.inactivePlayer = this.players[namePlayer2];
         this.running = false;
@@ -59,13 +58,13 @@ class Game {
         var player = this.players[playerName];
         
         if (player) {
-            var countShipsPlaced = player.sea.shipsByType(ship.type).length;
-    
-            if (countShipsPlaced >= ship.count)
+            var numberOfShipsPlaced = player.sea.shipsByType(ship.type).length;
+            
+            if (numberOfShipsPlaced >= ship.permittedNumber)
             {
                 throw new DomainError('Ship type exhausted', {
                     type: ship.type,
-                    count: ship.count
+                    count: ship.permittedNumber
                 });
             }
     
@@ -78,17 +77,14 @@ class Game {
     }
 
     start() {
-
         if (this.winner) {
             throw new DomainError(`The game is over, winner is ${this.winner.name}`, {});
         }
-    
         if (this.running) {
             throw new DomainError(`The game is already running`, {});
         }
 
         this.enforceAllShipsPlaced();
-    
         this.running = true;
     }
 
@@ -96,15 +92,13 @@ class Game {
         var details;
 
         [this.activePlayer, this.inactivePlayer].forEach(player => {
+            var shipsLeftToBePlaced = this.findShipsLeftToBePlaced(player); 
             
-            var shiptsLeftToBePlaced = this.findShipsLeftToBePlaced(player); 
-            
-            if (shiptsLeftToBePlaced) {
+            if (shipsLeftToBePlaced) {
                 if (!details) {
                     details = {};
                 }
-
-                details[player.name] = shiptsLeftToBePlaced;
+                details[player.name] = shipsLeftToBePlaced;
             }
         });
 
@@ -116,14 +110,14 @@ class Game {
     findShipsLeftToBePlaced(player) {
         var result;
         
-        shipConfigs.forEach(shipConfig => {
-            const countShipsPlaced = shipConfig.count - player.sea.shipsByType(shipConfig.type).length;
+        this.allowedShips.forEach(shipConfig => {
+            const numberOfShipsPlaced = shipConfig.count - player.sea.shipsByType(shipConfig.type).length;
     
-            if (countShipsPlaced > 0) {
+            if (numberOfShipsPlaced > 0) {
                 if (!result) {
                     result = {};
                 }
-                result[shipConfig.type] = countShipsPlaced;
+                result[shipConfig.type] = numberOfShipsPlaced;
             }
         });
 

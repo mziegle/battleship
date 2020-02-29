@@ -1,11 +1,9 @@
-var should = require('chai').should()
-var Game = require('../../../src/battleship/domain/game').Game;
-var Sea = require('../../../src/battleship/domain/sea').Sea;
-var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-var Battleship = require('../../../src/battleship/domain/ship').Battleship;
-var Carrier = require('../../../src/battleship/domain/ship').Carrier;
-var Destroyer = require('../../../src/battleship/domain/ship').Destroyer;
-var Submarine = require('../../../src/battleship/domain/ship').Submarine;
+require('chai').should()
+
+const ALLOWED_SHIPS = require('../../../src/battleship/config').ALLOWED_SHIPS;
+const Game = require('../../../src/battleship/domain/game').Game;
+const Ship = require('../../../src/battleship/domain/ship').Ship;
+const ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
 
 const PLAYER_1 = 'player1';
 const PLAYER_2 = 'player2';
@@ -15,22 +13,24 @@ describe('Game', () => {
     var game;
     
     beforeEach(() => {
-        game = new Game(PLAYER_1, PLAYER_2);
+        game = new Game(PLAYER_1, PLAYER_2, ALLOWED_SHIPS);
     });
 
     describe('#placeShip()', () => {
         it('should throw an error when more than 1 carriers is placed', () => {
-            game.placeShip(PLAYER_1, 'A', 1, new Carrier(), ShipAlignment.horizontally);
+            game.placeShip(PLAYER_1, 'A', 1, new Ship('carrier', 5, 1), ShipAlignment.horizontally);
 
-            var placeSecondCarrier = () => game.placeShip(PLAYER_1, 'C', 1, new Carrier(), ShipAlignment.horizontally); 
+            var placeSecondCarrier = () => game.placeShip(PLAYER_1, 'C', 1, 
+                new Ship('carrier', 5, 1), ShipAlignment.horizontally); 
 
             placeSecondCarrier.should.throw('Ship type exhausted');
         });
 
-        it('should throw an error when an unregisted player tries to set a ship', () => {
-            var unkownPlayerPlacesShip = () => game.placeShip('unknown', 'A', 1, new Carrier(), ShipAlignment.horizontally);
+        it('should throw an error when an unregistered player tries to set a ship', () => {
+            var unknownPlayerPlacesShip = () => game.placeShip('unknown', 'A', 1, 
+                new Ship('carrier', 5, 1), ShipAlignment.horizontally);
 
-            unkownPlayerPlacesShip.should.throw('unknown');
+            unknownPlayerPlacesShip.should.throw('unknown');
         });
 
         it('should set all allowed ships', () => {
@@ -190,15 +190,15 @@ describe('Game', () => {
     }
 
     function placeAllShips(player) {
-        game.placeShip(player, 'A', 1, new Carrier(), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 3, new Battleship(), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 5, new Battleship(), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 7, new Destroyer(), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 9, new Destroyer(), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 1, new Destroyer(), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 3, new Submarine(), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 5, new Submarine(), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 7, new Submarine(), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 9, new Submarine(), ShipAlignment.horizontally);
+        game.placeShip(player, 'A', 1, new Ship('carrier', 5, 1), ShipAlignment.horizontally);
+        game.placeShip(player, 'A', 3, new Ship('battleship', 4, 2), ShipAlignment.horizontally);
+        game.placeShip(player, 'A', 5, new Ship('battleship', 4, 2), ShipAlignment.horizontally);
+        game.placeShip(player, 'A', 7, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
+        game.placeShip(player, 'A', 9, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
+        game.placeShip(player, 'G', 1, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
+        game.placeShip(player, 'G', 3, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
+        game.placeShip(player, 'G', 5, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
+        game.placeShip(player, 'G', 7, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
+        game.placeShip(player, 'G', 9, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
     }
 })

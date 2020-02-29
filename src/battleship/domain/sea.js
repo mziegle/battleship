@@ -14,7 +14,7 @@ class Sea {
         return this.grid.getField(x, y).occupied;
     }
     
-    destory(x, y) {
+    destroy(x, y) {
         return this.grid.getField(x, y).free();
     }
     
@@ -47,7 +47,7 @@ class Sea {
     bombard(x, y) {
         if (this.isHit(x, y)) {
             
-            this.destory(x, y);
+            this.destroy(x, y);
     
             if (this.isShipSunk(x, y)) {
                 return 'sunk';
