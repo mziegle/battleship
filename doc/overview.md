@@ -1,7 +1,9 @@
 # Schiffeversenken: Ein Beispiel für BDD
 
-## Komminkationsprobleme bei der Softwareentwicklung
-Häufig ist schlechte Kommunikation zwischen den Projektbeteiligten der Grund für mangelhafte Software
+## Kommunikationsprobleme bei der Softwareentwicklung
+
+Häufig ist schlechte Kommunikation zwischen den Projektbeteiligten der Grund für mangelhafte Software.
+
 - Entwickler verstehen die Domäne nicht ausreichend
 - Domänenexperten verstehen die technische Seite nicht
 - Missverständnisse werden viel zu spät aufgelöst
@@ -9,33 +11,36 @@ Häufig ist schlechte Kommunikation zwischen den Projektbeteiligten der Grund f�
 ## Lösungsmöglichkeiten
 
 ### Ubiquituous Language
-Der Begriff Ubiquituous Language stammt aus dem Domain Driven Design und wird ins Deutsche mit universelle Sprache übersetzt. Sie stellt eine gemeinsame Sprache dar, die sowohl von den Domänenexperten als auch von den Entwicklern gesprochen wird. Missverständnisse können reduziert werden.
+
+Der Begriff Ubiquituous Language stammt aus dem Domain Driven Design und wird ins Deutsche mit universelle Sprache übersetzt. Sie stellt eine gemeinsame Sprache dar, die sowohl von den Domänenexperten als auch von den Entwicklern gesprochen wird. Das Angleichen der Sprache von Entwicklern und Domänenexperten führt zur Reduktion von Missverständnissen.
 
 ## Test Driven Developement
 
 - TDD Cycle: Schreibe eine Spezifikation -> Erfülle den Test -> Refactor
-- Verhindere zu komplexes Design. Der geschriebene Code sollte nur seine Aufgabe erfüllen, nicht mehr und nicht weniger.
-- Wenn die Tests implementiert sind kann die Software beliebig umgestellt werden ohne, dass die Gefahr besteht die Funktionalität wieder kaputt zu machen.
+- Verhindere zu komplexes Design. Der geschriebene Code sollte nur den Test erfüllen, nicht mehr und nicht weniger.
+- Wenn die Tests implementiert sind kann die Software beliebig umgebaut werden, ohne dass die Gefahr besteht die Funktionalität wieder kaputt zu machen.
 - Refactoring bedeutet nicht die Funktionalität des Codes zu verändern, sondern nur sein Design.
-- Refactor so lange bis es total einfach ist die nächste Anforderung einzubauen.
+- Es sollte so lange refactored werden, bis die neue Funktionalität sehr einfach eingebaut werden kann.
 
 ## BDD
 
 Definition von Matt Wynne (Mitbegründer von Cucumber):
 
-> BDD-Teilnehmer erforschen, entdecken und definieren die Problemdomäne und entwickeln dann das gewünschte 
+> BDD-Teilnehmer erforschen, entdecken und definieren die Problemdomäne und entwickeln dann das gewünschte
 > Verhalten von Software mit Hilfe von Gesprächen, konkreten Beispielen und automatisierten Tests.
 
 1. Entwickler, Tester, Domänenexperten und Stakeholder müssen intensiv miteinander kommunizieren.
-2. Es muss zunächst ein klares Bild entstehen welche Probleme die Software überhaupt lösen soll.
-3. Die Anforderungen an die Software müssen mit Hilfe der Ubiquituous Language für alle leicht verständlich definiert werden. Um dies sicherzustellen schreiben die Teilnehmer die Anforderungen gemeinsam. Die Anforderungen werden mit Hilfe von Beispielen definiert.
-3. Die definierten Beispiel werden als automatisierte Tests implementiert.
+2. Es muss zunächst ein klares Bild entstehen, welche Probleme die Software überhaupt lösen soll.
+3. Die Anforderungen an die Software müssen mit Hilfe einer gemeinsamen und umfassenden Sprache für alle leicht verständlich definiert werden. Um dies sicherzustellen, schreiben die Teilnehmer die Anforderungen gemeinsam. Die Anforderungen werden mit Hilfe von Beispielen definiert.
+4. Die definierten Beispiele werden als automatisierte Tests implementiert.
 5. Die automatisierten Tests werden zu lebender Spezifikation. Wenn eine Spezifikation geändert wird, muss folglich der Test geändert werden. Solange der Test fehl schlägt kann nicht installiert werden. Somit kann die Spezifikation nicht veralten.
 
 ### Gherkin - Given, When, Then
+
 BDD muss nicht mit Hilfe von Gherkin umgesetzt werden. Beispielsweise können Akzeptanztests auch mit Hilfe von JUnit umgesetzt werden. Gherkin hat den großen Vorteil, dass es typischerweise von allen Projektbeteiligten verstanden wird.
 
 ## Beispiel
+
 Das Spiel Schiffeversenken dient als Beispiel, wie mit Hilfe von TDD und BDD ein Softwareprojekt umgesetzt werden kann.
 
 Der Domänenexperte erklärt die Regeln des Spiels Schiffe versenken.
