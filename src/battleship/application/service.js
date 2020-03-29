@@ -59,7 +59,7 @@ class ApplicationService {
             throw new DomainError(`It's not ${game.getInactivePlayerName()}s turn`, {});
         }
 
-        return game.bombard(row, column);
+        return game.fire(row, column);
     }
 }
 

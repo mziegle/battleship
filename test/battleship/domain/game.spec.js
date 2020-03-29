@@ -57,7 +57,7 @@ describe('Game', () => {
         });
     });
 
-    describe('#bombard()', () => {
+    describe('#fire()', () => {
         
         it('should indicate "water" when no ship was hit', () => {
             placeAllShips(PLAYER_1);
@@ -65,7 +65,7 @@ describe('Game', () => {
     
             game.start();
 
-            game.bombard('A', 10).hits.should.equal('water');
+            game.fire('A', 10).hits.should.equal('water');
         });
 
         it('should indicate "hit" when a ship was hit', () => {
@@ -74,7 +74,7 @@ describe('Game', () => {
     
             game.start();
 
-            game.bombard('A', 1).hits.should.equal('hit');
+            game.fire('A', 1).hits.should.equal('hit');
         });
 
         it('should indicate "sunk" when all fields of the ship have been hit', () => {
@@ -83,11 +83,11 @@ describe('Game', () => {
     
             game.start();
 
-            game.bombard('A', 1).hits.should.equal('hit');
-            game.bombard('B', 1).hits.should.equal('hit');
-            game.bombard('C', 1).hits.should.equal('hit');
-            game.bombard('D', 1).hits.should.equal('hit');
-            game.bombard('E', 1).hits.should.equal('sunk');
+            game.fire('A', 1).hits.should.equal('hit');
+            game.fire('B', 1).hits.should.equal('hit');
+            game.fire('C', 1).hits.should.equal('hit');
+            game.fire('D', 1).hits.should.equal('hit');
+            game.fire('E', 1).hits.should.equal('sunk');
         });
     });
 
@@ -130,63 +130,63 @@ describe('Game', () => {
     });
 
     function sinkCarrier() {
-        game.bombard('A', 1);
-        game.bombard('B', 1);
-        game.bombard('C', 1);
-        game.bombard('D', 1);
-        game.bombard('E', 1).hits.should.equal('sunk');
+        game.fire('A', 1);
+        game.fire('B', 1);
+        game.fire('C', 1);
+        game.fire('D', 1);
+        game.fire('E', 1).hits.should.equal('sunk');
     }
 
     function sinkBattleship1() {
-        game.bombard('A', 3);
-        game.bombard('B', 3);
-        game.bombard('C', 3);
-        game.bombard('D', 3).hits.should.equal('sunk');
+        game.fire('A', 3);
+        game.fire('B', 3);
+        game.fire('C', 3);
+        game.fire('D', 3).hits.should.equal('sunk');
     }
 
     function sinkBattleship2() {
-        game.bombard('A', 5);
-        game.bombard('B', 5);
-        game.bombard('C', 5);
-        game.bombard('D', 5).hits.should.equal('sunk');
+        game.fire('A', 5);
+        game.fire('B', 5);
+        game.fire('C', 5);
+        game.fire('D', 5).hits.should.equal('sunk');
     }
 
     function sinkDestroyer1() {
-        game.bombard('A', 7);
-        game.bombard('B', 7);
-        game.bombard('C', 7).hits.should.equal('sunk');
+        game.fire('A', 7);
+        game.fire('B', 7);
+        game.fire('C', 7).hits.should.equal('sunk');
     }
 
     function sinkDestroyer2() {
-        game.bombard('A', 9);
-        game.bombard('B', 9);
-        game.bombard('C', 9).hits.should.equal('sunk');
+        game.fire('A', 9);
+        game.fire('B', 9);
+        game.fire('C', 9).hits.should.equal('sunk');
     }
 
     function sinkDestroyer3() {
-        game.bombard('G', 1);
-        game.bombard('H', 1);
-        game.bombard('I', 1).hits.should.equal('sunk');
+        game.fire('G', 1);
+        game.fire('H', 1);
+        game.fire('I', 1).hits.should.equal('sunk');
     }
 
     function sinkSubmarine1() {
-        game.bombard('G', 3);
-        game.bombard('H', 3).hits.should.equal('sunk');
+        game.fire('G', 3);
+        game.fire('H', 3).hits.should.equal('sunk');
     }
 
     function sinkSubmarine2() {
-        game.bombard('G', 5);
-        game.bombard('H', 5).hits.should.equal('sunk');
+        game.fire('G', 5);
+        game.fire('H', 5).hits.should.equal('sunk');
     }
 
     function sinkSubmarine3() {
-        game.bombard('G', 7);
-        game.bombard('H', 7).hits.should.equal('sunk');
+        game.fire('G', 7);
+        game.fire('H', 7).hits.should.equal('sunk');
     }
 
     function sinkSubmarine4() {
-        game.bombard('G', 9);
-        game.bombard('H', 9).hits.should.equal('sunk');
+        game.fire('G', 9);
+        game.fire('H', 9).hits.should.equal('sunk');
     }
 
     function placeAllShips(player) {

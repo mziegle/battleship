@@ -44,7 +44,7 @@ class Sea {
         return fields;
     }
     
-    bombard(x, y) {
+    fire(x, y) {
         if (this.isHit(x, y)) {
             
             this.destroy(x, y);
@@ -79,6 +79,10 @@ class Sea {
         }
     
         return true;
+    }
+
+    amountShipsOfType(type) {
+        return this.shipsByType(type).length;
     }
 }
 

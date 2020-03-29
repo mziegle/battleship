@@ -49,94 +49,92 @@ class Game {
     }
 
     placeShip(playerName, row, column, ship, alignment) {
-        var fields = [];
-    
         if (this.running) {
             throw new DomainError(`The ${ship} cannot be placed, because the game is already running`, {});
         }
     
         var player = this.players[playerName];
-        
-        if (player) {
-            var numberOfShipsPlaced = player.sea.shipsByType(ship.type).length;
-            
-            if (numberOfShipsPlaced >= ship.permittedNumber)
-            {
-                throw new DomainError('Ship type exhausted', {
-                    type: ship.type,
-                    count: ship.permittedNumber
-                });
-            }
-    
-            fields = player.sea.placeShip(row, column, ship, alignment);
-        } else {
-            throw new DomainError(`Player ${playerName} is not registered for this game`, {});
+
+        if (!player) {
+            throw new DomainError(`Player ${playerName} is not registered for this game`, {
+                'players': [this.getActivePlayerName(), this.getInactivePlayerName()]
+            });
         }
+        
+        var numberOfShipsPlaced = player.sea.amountShipsOfType(ship.type);
+        
+        if (numberOfShipsPlaced >= ship.permittedNumber)
+        {
+            throw new DomainError('Ship type exhausted', {
+                type: ship.type,
+                count: ship.permittedNumber
+            });
+        }
+    
+        var fields = player.sea.placeShip(row, column, ship, alignment);
     
         return fields;
     }
 
     start() {
-        if (this.winner) {
-            throw new DomainError(`The game is over, winner is ${this.winner.name}`, {});
-        }
         if (this.running) {
             throw new DomainError(`The game is already running`, {});
         }
-
+        if (this.winner) {
+            throw new DomainError(`The game is over, winner is ${this.winner.name}`, { 
+                winner: this.winner.name });
+        }
         this.enforceAllShipsPlaced();
         this.running = true;
     }
 
     enforceAllShipsPlaced() {
-        var details;
-
-        [this.activePlayer, this.inactivePlayer].forEach(player => {
-            var shipsLeftToBePlaced = this.findShipsLeftToBePlaced(player); 
-            
-            if (shipsLeftToBePlaced) {
-                if (!details) {
-                    details = {};
+        var details = [this.activePlayer, this.inactivePlayer]
+            .map(player => {
+                return {
+                    'player': player.name, 
+                    'shipsLeftToPlace': this.findShipsLeftToPlace(player)
                 }
-                details[player.name] = shipsLeftToBePlaced;
-            }
-        });
+            })
+            .reduce((details, current) => { 
+                if(Object.keys(current.shipsLeftToPlace).length > 0) 
+                    details[current.player] = current.shipsLeftToPlace;
+                return details;
+            }, {});
 
-        if (details) {
+        if (Object.keys(details).length > 0) {
             throw new DomainError('Not all ships were placed', details);
         }
     }
 
-    findShipsLeftToBePlaced(player) {
-        var result;
-        
-        this.allowedShips.forEach(shipConfig => {
-            const numberOfShipsPlaced = shipConfig.count - player.sea.shipsByType(shipConfig.type).length;
-    
-            if (numberOfShipsPlaced > 0) {
-                if (!result) {
-                    result = {};
-                }
-                result[shipConfig.type] = numberOfShipsPlaced;
+    findShipsLeftToPlace(player) {
+        return this.allowedShips.map(shipConfig => {
+            return {
+                'type': shipConfig.type,
+                'shipsLeftToPlace': shipConfig.count - player.sea.amountShipsOfType(shipConfig.type)
             }
-        });
-
-        return result;
+        })
+        .reduce((result, current) => {
+            if (current.shipsLeftToPlace > 0) {
+                result[current.type] = current.shipsLeftToPlace;
+            }
+            return result;
+        }, {});
     }
 
-    bombard(row, column) {
+    fire(row, column) {
 
         if (!this.running) {
             throw new DomainError('The game has not been started yet', {});
         }
     
         if (this.winner) {
-            throw new DomainError(`Cannot bombard, game is already won by ${this.winner.name}`,
+            throw new DomainError(`Cannot fire, game is already won by ${this.winner.name}`,
                 { winner: this.winner.name });
         }
         
         var result = {};
-        var bombardmentResult = this.inactivePlayer.sea.bombard(row, column);
+        var bombardmentResult = this.inactivePlayer.sea.fire(row, column);
         
         if (this.inactivePlayer.sea.allShipsSunk()) {
             this.winner = this.activePlayer;
