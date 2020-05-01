@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "unittest": "mocha --recursive",
-    "integrationtest": "cucumber-js.cmd --format ./node_modules/cucumber-pretty --tags \"not @skip\"",
+    "integrationtest": "cucumber-js --format ./node_modules/cucumber-pretty --tags \"not @skip\"",
     "start": "node ./src/battleship/index.js",
     "test": "concurrently --raw \"npm run unittest\" \"npm run integrationtest\""
   },

@@ -1,0 +1,16 @@
+@startuml
+package "Infrastructure" {
+  [RESTful Webservice] as restHandler
+}
+package "Application" {
+  [Battleship Games Management] as application
+  application -up-> application_service
+}
+package "Domain" {
+  domain as [Bussines Logic]
+  domain -up-> game
+}
+restHandler -up-> http
+restHandler --( application_service
+application --( game
+@enduml

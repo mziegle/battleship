@@ -14,7 +14,7 @@ Häufig ist schlechte Kommunikation zwischen den Projektbeteiligten der Grund f�
 
 Der Begriff Ubiquituous Language stammt aus dem Domain Driven Design und wird ins Deutsche mit universelle Sprache übersetzt. Sie stellt eine gemeinsame Sprache dar, die sowohl von den Domänenexperten als auch von den Entwicklern gesprochen wird. Das Angleichen der Sprache von Entwicklern und Domänenexperten führt zur Reduktion von Missverständnissen.
 
-## Test Driven Developement
+## Test Driven Development
 
 - TDD Cycle: Schreibe eine Spezifikation -> Erfülle den Test -> Refactor
 - Verhindere zu komplexes Design. Der geschriebene Code sollte nur den Test erfüllen, nicht mehr und nicht weniger.
@@ -88,9 +88,25 @@ Ein Mitarbeiter aus dem Marketing hat eine Idee.
 
 16. Spieler sollen sich mit Hilfe von biometrischen Merkmalen authentifizieren können.
 
+## Architektur
+
+### Hexagonale Architektur / Ports and Adapters
+
+Ein bekanntes Problem ist, dass es bei der Entwicklung von Software häufig nicht gelang die Infiltration, durch Schnittstellen Code (UI, Webservice etc.), der Geschäftslogik zu verhindern.
+Folgende Nachteile ergeben sich daraus.
+
+- Es wird deutlich schwieriger die Geschäftslogik durch automatisierte Tests abzusichern, da diese von Details der Benutzerschnittstelle durchsetzt sind.
+- Aus dem gleichen Grund ist es auch schwierig beispielsweise eine Schnittstelle für Benutzereingaben um eine Schnittstelle für programmgesteuerte Eingaben zu erweitern.
+
+Grundsätzlich bietet es sich daher an die Funktionalität einer Applikation immer zuerst über eine API zur Verfügung zu stellen. Die Akzeptanztests nutzen diese API um sicherzustellen, dass die Anforderungen korrekt umgesetzt wurden. Somit kann verhindert werden, dass sich Schnittstellen Code in der Geschäftslogik ausbreitet, da dann die Akzeptanztests nicht mehr ausführbar sind.
+
+Bei der hexagonalen Architektur ist die Idee, dass es einen Applikationskern in der Mitte gibt. Um den Applikationskern herum werden Ports angeordnet, in welche man verschiedene Adapter stecken kann. Einige Adapter sind notwendig, zum Beispiel eine Benutzerschnittstelle und eine Datenbank. Praktischerweise kann man zu Testzwecken statt dem Benutzerschnittstellen-Adapter einen Test-Suite anschließen und statt der richtigen Datenbank eine flache Datei mit Testdaten.
+
+![Components](./components.png)
 
 Referenzen
 
 - [Schiffe versenken](https://de.wikipedia.org/wiki/Schiffe_versenken)
 - [Cucumber](https://cucumber.io/)
 - [Introduction to TDD and BDD](https://cucumber.io/blog/bdd/intro-to-bdd-and-tdd/)
+- [Hexagon Architecutre](https://web.archive.org/web/20180822100852/http://alistair.cockburn.us/Hexagonal+architecture)
