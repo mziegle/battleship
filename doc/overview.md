@@ -18,9 +18,9 @@ Der Begriff Ubiquituous Language stammt aus dem Domain Driven Design und wird in
 
 - TDD Cycle: Schreibe eine Spezifikation -> Erfülle den Test -> Refactor
 - Verhindere zu komplexes Design. Der geschriebene Code sollte nur den Test erfüllen, nicht mehr und nicht weniger.
-- Wenn die Tests implementiert sind kann die Software beliebig umgebaut werden, ohne dass die Gefahr besteht die Funktionalität wieder kaputt zu machen.
+- Wenn die Tests implementiert sind, kann die Software beliebig umgebaut werden, ohne dass die Gefahr besteht die Funktionalität wieder kaputt zu machen.
 - Refactoring bedeutet nicht die Funktionalität des Codes zu verändern, sondern nur sein Design.
-- Es sollte so lange refactored werden, bis die neue Funktionalität sehr einfach eingebaut werden kann.
+- Es sollte so lange refactored werden, bis die gewünschte Funktionalität sehr einfach eingebaut werden kann.
 
 ## BDD
 
@@ -29,24 +29,24 @@ Definition von Matt Wynne (Mitbegründer von Cucumber):
 > BDD-Teilnehmer erforschen, entdecken und definieren die Problemdomäne und entwickeln dann das gewünschte
 > Verhalten von Software mit Hilfe von Gesprächen, konkreten Beispielen und automatisierten Tests.
 
-1. Entwickler, Tester, Domänenexperten und Stakeholder müssen intensiv miteinander kommunizieren.
-2. Es muss zunächst ein klares Bild entstehen, welche Probleme die Software überhaupt lösen soll.
-3. Die Anforderungen an die Software müssen mit Hilfe einer gemeinsamen und umfassenden Sprache für alle leicht verständlich definiert werden. Um dies sicherzustellen, schreiben die Teilnehmer die Anforderungen gemeinsam. Die Anforderungen werden mit Hilfe von Beispielen definiert.
+1. Entwickler, Tester, Domänenexperten und Stakeholder müssen schon im Vorfeld anfangen intensiv miteinander kommunizieren. Die Entwickler dürfen nicht davon ausgehen, dass der Anforderungssteller eine Lösung für sie entwirft, die sie nur noch umsetzen müssen.
+2. Es muss zunächst ein klares Bild entstehen, welche Ziele erreicht werden sollen und welche Lösungen man sich von der Software verspricht. Nur die Techniker verstehen, wie eine Lösung aussehen muss, die leicht umsetzbar, wartbar und schnell zu Verfügung steht aussehen muss. 
+3. Die Anforderungen an die Software müssen mit Hilfe einer gemeinsamen Sprache für alle leicht verständlich definiert werden. Um dies sicherzustellen, schreiben die Teilnehmer die Anforderungen gemeinsam. Die Anforderungen werden mit Hilfe von Beispielen definiert.
 4. Die definierten Beispiele werden als automatisierte Tests implementiert.
-5. Die automatisierten Tests werden zu lebender Spezifikation. Wenn eine Spezifikation geändert wird, muss folglich der Test geändert werden. Solange der Test fehl schlägt kann nicht installiert werden. Somit kann die Spezifikation nicht veralten.
+5. Die automatisierten Tests werden zu lebender Spezifikation. Wenn die spezifizierte Funktionalität geändert wird, muss auch der entsprechende Testfall geändert werden. Somit kann die Spezifikation nicht veralten.
 
 ### Gherkin - Given, When, Then
 
 BDD muss nicht mit Hilfe von Gherkin umgesetzt werden. Beispielsweise können Akzeptanztests auch mit Hilfe von JUnit umgesetzt werden. Gherkin hat den großen Vorteil, dass es typischerweise von allen Projektbeteiligten verstanden wird.
 
-## Beispiel
+## Beispiel Schiffeversenken
 
 Das Spiel Schiffeversenken dient als Beispiel, wie mit Hilfe von TDD und BDD ein Softwareprojekt umgesetzt werden kann.
 
 Der Domänenexperte erklärt die Regeln des Spiels Schiffe versenken.
 
 1. Zwei Spieler spielen gegeneinader.
-2. Jeder Spieler erhält ein 10x10 große Raster, welches das eigene Meer darstellt.
+2. Jeder Spieler erhält ein 10x10 großes Raster, welches das eigene Meer darstellt.
 3. Jedes Raster ist am oberen Rand mit den Buchstaben A bis J nummeriert und am linken Rand mit den Zahlen 1 bis 10.
     |     | A | B | ... | J |
     |-----|---|---|-----|---|
@@ -88,11 +88,11 @@ Ein Mitarbeiter aus dem Marketing hat eine Idee.
 
 16. Spieler sollen sich mit Hilfe von biometrischen Merkmalen authentifizieren können.
 
-## Architektur
+## Software-Architektur
 
 ### Hexagonale Architektur / Ports and Adapters
 
-Ein bekanntes Problem ist, dass es bei der Entwicklung von Software häufig nicht gelang die Infiltration, durch Schnittstellen Code (UI, Webservice etc.), der Geschäftslogik zu verhindern.
+Ein bekanntes Problem ist, dass es bei der Entwicklung von Software häufig nicht gelang, den Schnittstellen-Code (HTTP, HTML, XML usw.) von der Geschäftslogik abzutrennen.
 Folgende Nachteile ergeben sich daraus.
 
 - Es wird deutlich schwieriger die Geschäftslogik durch automatisierte Tests abzusichern, da diese von Details der Benutzerschnittstelle durchsetzt sind.
@@ -100,7 +100,8 @@ Folgende Nachteile ergeben sich daraus.
 
 Grundsätzlich bietet es sich daher an die Funktionalität einer Applikation immer zuerst über eine API zur Verfügung zu stellen. Die Akzeptanztests nutzen diese API um sicherzustellen, dass die Anforderungen korrekt umgesetzt wurden. Somit kann verhindert werden, dass sich Schnittstellen Code in der Geschäftslogik ausbreitet, da dann die Akzeptanztests nicht mehr ausführbar sind.
 
-Bei der hexagonalen Architektur ist die Idee, dass es einen Applikationskern in der Mitte gibt. Um den Applikationskern herum werden Ports angeordnet, in welche man verschiedene Adapter stecken kann. Einige Adapter sind notwendig, zum Beispiel eine Benutzerschnittstelle und eine Datenbank. Praktischerweise kann man zu Testzwecken statt dem Benutzerschnittstellen-Adapter einen Test-Suite anschließen und statt der richtigen Datenbank eine flache Datei mit Testdaten.
+Bei der hexagonalen Architektur ist die Idee, dass es einen Applikationskern in der Mitte gibt. Um den Applikationskern herum werden Ports angeordnet, in welche man verschiedene Adapter stecken kann.
+Ein Adapter ist beispielsweise die graphische Benutzeroberfläche. Der Port hierfür ist eine Programmierschnittstelle über welche die benötigten Daten abgerufen werden können und Kommandos für die eingegebenen Geschäftsvorfälle abgesetzt werden können. Ein weiterer Adapter könnte eine Datenbankanbindung darstellen.
 
 ![Components](./components.png)
 

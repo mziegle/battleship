@@ -4,7 +4,6 @@ var DomainError = require('./error').DomainError;
 const GRID_SIZE = 10;
 
 class Sea {
-    
     constructor() {
         this.grid = new Grid(GRID_SIZE);
         this.ships = {};
@@ -50,6 +49,7 @@ class Sea {
             this.destroy(x, y);
     
             if (this.isShipSunk(x, y)) {
+                // TODO make enum
                 return 'sunk';
             }
     
@@ -70,9 +70,9 @@ class Sea {
     }
     
     allShipsSunk() {
-        for (var i = 0; i < this.grid.table.length; i++) {
-            for (var j = 0; j < this.grid.table[i].length; j++) {
-                if (this.grid.table[i][j].occupied) {
+        for (var x = 0; x < this.grid.table.length; x++) {
+            for (var y = 0; y < this.grid.table[x].length; y++) {
+                if (this.grid.table[x][y].occupied) {
                     return false;
                 }
             }

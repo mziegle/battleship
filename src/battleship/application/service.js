@@ -17,7 +17,7 @@ class ApplicationService {
         const game = new Game(player1, player2, this.allowedShips);
 
         this.games.set(this.counter, game);
-        return this.counter++; 
+        return this.counter++;
     }
 
     gameState(gameId) {
