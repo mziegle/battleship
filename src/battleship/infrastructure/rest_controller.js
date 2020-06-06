@@ -7,22 +7,64 @@ class RestController {
     constructor(applicationService) {
         this.applicationService = applicationService;
         this.httpServer = express();
-
+        
+        this.allowCrossOriginRequests();
         this.httpServer.use(express.json());
+
+        // user management
+        this.httpServer.post('/players', (request, response) => this.registerPlayer(request, response));
+        this.httpServer.put('/players/:name/:x/:y', (request, response) => this.placeShip(request, response));
+
+        // game management
         this.httpServer.get('/games', (request, response) => this.listGames(request, response));
         this.httpServer.post('/games', (request, response) => this.newGame(request, response));
         this.httpServer.get('/games/:id/state', (request, response) => this.getGameState(request, response));
-        this.httpServer.put('/games/:id/:player/sea/:x/:y', (request, response) => this.placeShip(request, response)); 
         this.httpServer.put('/games/:id/state', (request, response) => this.startGame(request, response));
         this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fire(request, response));
     }
-
+    
     start() {
         const port = 8080;
-
+        
         this.httpServer.listen(port, () => {
             console.log(`Battleship server is listening on port ${port}`);
         });
+    }
+
+    allowCrossOriginRequests() {
+        this.httpServer.use(function(_, response, next) {
+            response.setHeader('Access-Control-Allow-Origin', '*');
+            response.header("Access-Control-Allow-Headers", "*");
+            response.header("Access-Control-Allow-Methods", "*");
+            next();
+        });
+    }
+
+    registerPlayer(request, response) {
+        var name = request.body.name;
+        
+        if (name) {
+            try {
+                this.applicationService.registerPlayer(name);
+                response.statusCode = 201;
+                response.setHeader('Location', `/players/${name}`);
+            } catch (error) {
+                if (error instanceof DomainError) {
+                    response.statusCode = 400;
+                    response.write(JSON.stringify({
+                        type: error.name,
+                        message: error.message,
+                        details: error.details
+                    }));
+                } else {
+                    throw error;
+                }
+            }
+        } else {
+            response.statusCode = 400;
+            response.write('Name is missing');
+        }
+        response.end();
     }
 
     listGames(request, response) {
@@ -32,7 +74,7 @@ class RestController {
     newGame(request, response) {
         var player1 = request.body.player1;
         var player2 = request.body.player2;
-    
+
         if (player1 && player2) {
             var gameId = this.applicationService.newGame(player1, player2);
     
@@ -41,7 +83,6 @@ class RestController {
             response.write(JSON.stringify({
                 id: gameId
             }));
-    
             response.end();
         } else {
             response.sendStatus(400);
@@ -58,15 +99,14 @@ class RestController {
     }
 
     placeShip(request, response) {
-        var gameId = parseInt(request.params.id);
-        var player = request.params.player;
+        var player = request.params.name;
         var x = request.params.x;
         var y = request.params.y;
         var shipType = request.body.shipType;
         var alignment = request.body.alignment;
     
         try {
-            var fields = this.applicationService.placeShip(gameId, player, x, y, shipType, alignment);
+            var fields = this.applicationService.placeShip(player, x, y, shipType, alignment);
         
             response.write(JSON.stringify({
                 fields: fields

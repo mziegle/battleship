@@ -1,0 +1,27 @@
+var Player = require('../domain/player').Player;
+var DomainError = require('../domain/error').DomainError;
+
+class PlayerRepository {
+    constructor(allowedShips) {
+        this.players = new Map();
+        this.allowedShips = allowedShips;
+    }
+
+    add(name) {
+        if (this.players.has(name)) {
+            throw new DomainError(`The name ${name} is already used`, {});
+        }
+
+        const player = new Player(name, this.allowedShips);
+
+        this.players.set(name, player);
+    }
+
+    get(name) {
+        return this.players.get(name);
+    }
+}
+
+module.exports = {
+    PlayerRepository: PlayerRepository
+}

@@ -22,7 +22,7 @@ Feature: Fire
   Scenario: Ship is missed
     When player1 fires at A2 of player2s sea
     Then only water is hit
-
+ 
   Scenario: Ship is hit
     When player1 fires at A1 of player2s sea
     Then the ship is hit

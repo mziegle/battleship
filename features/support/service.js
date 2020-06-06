@@ -38,6 +38,14 @@ class BattleshipServer {
         this.games = new Map();
     }
 
+    async registerPlayer(name) {
+        try {
+            return await request(api.registerPlayer(this.url, name)) 
+        } catch (statusCodeError) {
+            return statusCodeError;
+        }
+    }
+
     async checkStatus(gameId) {
         return await request(api.gameStatus(this.url, gameId));
     }

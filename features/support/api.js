@@ -1,8 +1,23 @@
 
+var registerPlayer = function(url, name) {
+    return {
+        method: 'POST',
+        uri: `${url}/players`,
+        body: {
+            name: name
+        },
+        headers: {
+            'content-type': 'application/json'
+        },
+        json: true,
+        resolveWithFullResponse: true
+    }
+}
+
 var placeShip = function(url, gameId, player, row, column, shipType, alignment) {
     return {
         method: 'PUT',
-        uri: `${url}/games/${gameId}/${player}/sea/${row}/${column}`,
+        uri: `${url}/players/${player}/${row}/${column}`,
         body: {
             shipType: shipType,
             alignment: alignment
@@ -71,6 +86,7 @@ var fire = function(url, gameId, player, field) {
 }
 
 module.exports = {
+    registerPlayer, registerPlayer,
     placeShip: placeShip,
     createGame: createGame,
     startGame: startGame,

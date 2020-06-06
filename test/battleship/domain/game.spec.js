@@ -3,45 +3,30 @@ require('chai').should()
 const ALLOWED_SHIPS = require('../../../src/battleship/config').ALLOWED_SHIPS;
 const Game = require('../../../src/battleship/domain/game').Game;
 const Ship = require('../../../src/battleship/domain/ship').Ship;
+const Player = require('../../../src/battleship/domain/player').Player;
 const ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-
-const PLAYER_1 = 'player1';
-const PLAYER_2 = 'player2';
+const placeAllShips = require('./player.spec').placeAllShips;
 
 describe('Game', () => {
 
     var game;
-    
+    var player1;
+    var player2;
+
     beforeEach(() => {
-        game = new Game(PLAYER_1, PLAYER_2, ALLOWED_SHIPS);
+        player1 = new Player('player1', ALLOWED_SHIPS);
+        player2 = new Player('player2', ALLOWED_SHIPS);
+        game = new Game(player1, player2);
     });
 
-    describe('#placeShip()', () => {
-        it('should throw an error when more than 1 carriers is placed', () => {
-            game.placeShip(PLAYER_1, 'A', 1, new Ship('carrier', 5, 1), ShipAlignment.horizontally);
+    describe('#join()', () => {
+        it('TODO', () => {})
+    });
 
-            var placeSecondCarrier = () => game.placeShip(PLAYER_1, 'C', 1, 
-                new Ship('carrier', 5, 1), ShipAlignment.horizontally); 
-
-            placeSecondCarrier.should.throw('Ship type exhausted');
-        });
-
-        it('should throw an error when an unregistered player tries to set a ship', () => {
-            var unknownPlayerPlacesShip = () => game.placeShip('unknown', 'A', 1, 
-                new Ship('carrier', 5, 1), ShipAlignment.horizontally);
-
-            unknownPlayerPlacesShip.should.throw('unknown');
-        });
-
-        it('should set all allowed ships', () => {
-            placeAllShips(PLAYER_1);
-        });
-    })
-    
     describe('#start()', () => {
         it('should start the game when both players have set all their ships', () => {
-            placeAllShips(PLAYER_1);
-            placeAllShips(PLAYER_2);
+            placeAllShips(player1);
+            placeAllShips(player2);
     
             game.start();
     
@@ -49,7 +34,7 @@ describe('Game', () => {
         });
 
         it('should throw an error when on player has not set all his ships', () => {
-            placeAllShips(PLAYER_1);
+            placeAllShips(player1);
     
             var start = () => game.start();
     
@@ -60,8 +45,8 @@ describe('Game', () => {
     describe('#fire()', () => {
         
         it('should indicate "water" when no ship was hit', () => {
-            placeAllShips(PLAYER_1);
-            placeAllShips(PLAYER_2);
+            placeAllShips(player1);
+            placeAllShips(player2);
     
             game.start();
 
@@ -69,8 +54,8 @@ describe('Game', () => {
         });
 
         it('should indicate "hit" when a ship was hit', () => {
-            placeAllShips(PLAYER_1);
-            placeAllShips(PLAYER_2);
+            placeAllShips(player1);
+            placeAllShips(player2);
     
             game.start();
 
@@ -78,8 +63,8 @@ describe('Game', () => {
         });
 
         it('should indicate "sunk" when all fields of the ship have been hit', () => {
-            placeAllShips(PLAYER_1);
-            placeAllShips(PLAYER_2);
+            placeAllShips(player1);
+            placeAllShips(player2);
     
             game.start();
 
@@ -92,8 +77,8 @@ describe('Game', () => {
     });
 
     it('the game is over when all ships of one player are sunk', () => {
-        placeAllShips(PLAYER_1);
-        placeAllShips(PLAYER_2);
+        placeAllShips(player1);
+        placeAllShips(player2);
 
         game.start();
 
@@ -126,7 +111,7 @@ describe('Game', () => {
 
         sinkSubmarine4();
 
-        game.winner.name.should.equal(PLAYER_1);
+        game.winner.name.should.equal(player1.name);
     });
 
     function sinkCarrier() {
@@ -187,18 +172,5 @@ describe('Game', () => {
     function sinkSubmarine4() {
         game.fire('G', 9);
         game.fire('H', 9).hits.should.equal('sunk');
-    }
-
-    function placeAllShips(player) {
-        game.placeShip(player, 'A', 1, new Ship('carrier', 5, 1), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 3, new Ship('battleship', 4, 2), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 5, new Ship('battleship', 4, 2), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 7, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
-        game.placeShip(player, 'A', 9, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 1, new Ship('destroyer', 3, 3), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 3, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 5, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 7, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
-        game.placeShip(player, 'G', 9, new Ship('submarine', 2, 4), ShipAlignment.horizontally);
     }
 })

@@ -46,7 +46,7 @@ const verifyErrorMessageDetails = function(docString) {
     this.response.error.details.should.deep.equal(shipsLeftToSet);
 }
 
-const verifyWhoseTurn = async function(player) {
+const verifyWhoesTurn = async function(player) {
     this.response = await this.battleshipServer.checkStatus(this.gameId);
     this.response.body.activePlayer.should.equal(player);
 }
@@ -64,5 +64,5 @@ Then('the requestor receives an error message', verifyErrorMessage);
 Then('the details show the ships left to be placed', verifyErrorMessageDetails)
 Then('the game is started', verifyGameStarted);
 Then('{word} wins', verifyGameWon)
-Then('it is {word}s turn', verifyWhoseTurn)
-Then('{word} is allowed to fire again', verifyWhoseTurn)
+Then('it is {word}s turn', verifyWhoesTurn)
+Then('{word} is allowed to fire again', verifyWhoesTurn)

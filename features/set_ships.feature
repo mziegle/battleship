@@ -3,8 +3,8 @@ Feature: Set ships
   As a player,
   I want to set my warships on my sea.
 
-  Background: Create game
-    Given a new battleship match between player1 and player2 has been requested
+  Background: Player
+    Given player1 has been registered
 
   Scenario Outline: Ship types and their size
     When player1 sets a <ship type> to A1

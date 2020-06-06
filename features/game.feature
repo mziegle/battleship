@@ -14,22 +14,6 @@ Feature: Game
     Then the requestor receives an error message
       | type         | message                   |
       | Domain Error | Not all ships were placed |
-    And the details show the ships left to be placed
-      """
-        {
-          "player1": {
-            "battleship": 2,
-            "destroyer": 3,
-            "submarine": 4
-          },
-          "player2": {
-            "carrier": 1,
-            "battleship": 2,
-            "destroyer": 3,
-            "submarine": 4
-          }
-        }
-      """
 
   Scenario: Player fires although the game has not yet started
     Given a new battleship match between player1 and player2 has been created

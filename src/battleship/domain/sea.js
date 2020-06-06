@@ -39,23 +39,18 @@ class Sea {
         } else {
             this.ships[shipType] = [ship];
         }
-    
         return fields;
     }
     
     fire(x, y) {
         if (this.isHit(x, y)) {
-            
             this.destroy(x, y);
-    
             if (this.isShipSunk(x, y)) {
                 // TODO make enum
                 return 'sunk';
             }
-    
             return 'hit';
         }
-    
         return 'water';
     }
     
@@ -65,7 +60,6 @@ class Sea {
         if (Array.isArray(ships)) {
             return ships
         }
-    
         return [];
     }
     
@@ -77,7 +71,6 @@ class Sea {
                 }
             }
         }
-    
         return true;
     }
 
@@ -219,7 +212,6 @@ class Grid {
 }
 
 class Field {
-
     constructor(x, y) {
         this.x = x;
         this.y = y;
