@@ -15,13 +15,6 @@ describe('Sea', () => {
         battleship = () => new Ship('battleship', 4, 2);
     });
 
-    describe('#Sea()', () => {
-        it('should instantiate a sea', () => {
-            should.exist(sea);
-            sea.should.be.an('object');
-        })
-    });
-
     describe('#isHit()', () => {
         it('should determine whether a shot at this field would be a hit', () => {
             sea.isHit('A', 1).should.be.false;

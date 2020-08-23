@@ -3,14 +3,18 @@ var DomainError = require('./error').DomainError;
 var Player = require('./player').Player;
 
 class Game {
-    constructor(player1, player2) {
+    constructor(player1) {
         this.players = {};
-        this.players[player1.name] = player1;
-        this.players[player2.name] = player2;
         this.activePlayer = player1;
-        this.inactivePlayer = player2;
+        this.inactivePlayer = undefined;
+        this.players[player1.name] = player1;
         this.running = false;
         this.winner = undefined;
+    }
+    
+    join(player2) {
+        this.inactivePlayer = player2;
+        this.players[player2.name] = player2;
     }
 
     getState() {
@@ -27,21 +31,24 @@ class Game {
         return result;
     }
 
-    getInactivePlayerName() {
-        return this.inactivePlayer.name;
-    }
-
     getActivePlayerName() {
+        if (!this.activePlayer) {
+            return undefined;
+        }
         return this.activePlayer.name;
     }
 
-    switchPlayers() {
-        var tmp = this.activePlayer;
-        this.activePlayer = this.inactivePlayer;
-        this.inactivePlayer = tmp;
+    getInactivePlayerName() {
+        if (!this.inactivePlayer) {
+            return undefined;
+        }
+        return this.inactivePlayer.name;
     }
 
     start() {
+        if (!this.bothPlayersPresent()) {
+            throw new DomainError(`Second player is missing`, {});
+        }
         if (this.running) {
             throw new DomainError(`The game is already running`, {});
         }
@@ -54,7 +61,15 @@ class Game {
         this.running = true;
     }
 
-    fire(row, column) {
+    bothPlayersPresent() {
+        return this.activePlayer && this.inactivePlayer;
+    }
+
+    fireAt(target, row, column) {
+        
+        if (this.getInactivePlayerName() !== target) {
+            throw new DomainError(`It's not ${this.getInactivePlayerName()}s turn`, {});
+        }
 
         if (!this.running) {
             throw new DomainError('The game has not been started yet', {});
@@ -86,6 +101,12 @@ class Game {
         result.hits = bombardmentResult;
 
         return result;
+    }
+
+    switchPlayers() {
+        var tmp = this.activePlayer;
+        this.activePlayer = this.inactivePlayer;
+        this.inactivePlayer = tmp;
     }
 }
 

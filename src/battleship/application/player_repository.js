@@ -18,7 +18,15 @@ class PlayerRepository {
     }
 
     get(name) {
+        if (!this.players.has(name)) {
+            throw new DomainError(`Player ${name} is not registered`, {});
+        }
+
         return this.players.get(name);
+    }
+
+    list() {
+        return [...this.players.keys()];
     }
 }
 

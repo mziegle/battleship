@@ -3,8 +3,9 @@ Feature: Fire
   As a player,
   I want to fire at my opponents sea.
 
-  Background: Set ships
-    Given a new battleship match between player1 and player2 has been created
+  Background: Prepare game
+    Given player1 has been registered
+    And player2 has been registered
     And both players have placed their ships as follows
       | from | to | ship       |
       | A1   | E1 | carrier    |
@@ -17,7 +18,7 @@ Feature: Fire
       | G5   | H5 | submarine  |
       | G7   | H7 | submarine  |
       | G9   | H9 | submarine  |
-    And the match has been started
+    And a match between player1 and player2 has been started
 
   Scenario: Ship is missed
     When player1 fires at A2 of player2s sea

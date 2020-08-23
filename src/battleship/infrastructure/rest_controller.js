@@ -1,14 +1,23 @@
 
-var express = require('express');
-var DomainError = require('../domain/error').DomainError;
+const express = require('express');
+const HttpStatus = require('http-status-codes');
+const pino = require('pino');
+const expressPino = require('express-pino-logger');
+const logger = pino({level: process.env.LOG_LEVEL || 'info', prettyPrint: { colorize: true, translateTime: 'SYS:standard' }});
+const expressLogger = expressPino({ logger });
+
+const DomainError = require('../domain/error').DomainError;
+const ShipAlignment = require('../domain/ship').ShipAlignment;
 
 class RestController {
     
-    constructor(applicationService) {
+    constructor(serviceConfig, applicationService) {
+        this.serviceConfig = serviceConfig;
         this.applicationService = applicationService;
         this.httpServer = express();
         
         this.allowCrossOriginRequests();
+        this.httpServer.use(expressLogger);
         this.httpServer.use(express.json());
 
         // user management
@@ -17,20 +26,12 @@ class RestController {
 
         // game management
         this.httpServer.get('/games', (request, response) => this.listGames(request, response));
-        this.httpServer.post('/games', (request, response) => this.newGame(request, response));
+        this.httpServer.post('/games', (request, response) => this.createGameFor(request, response));
+        this.httpServer.patch('/games/:id', (request, response) => this.join(request, response));
         this.httpServer.get('/games/:id/state', (request, response) => this.getGameState(request, response));
-        this.httpServer.put('/games/:id/state', (request, response) => this.startGame(request, response));
-        this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fire(request, response));
+        this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fireAt(request, response));
     }
     
-    start() {
-        const port = 8080;
-        
-        this.httpServer.listen(port, () => {
-            console.log(`Battleship server is listening on port ${port}`);
-        });
-    }
-
     allowCrossOriginRequests() {
         this.httpServer.use(function(_, response, next) {
             response.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,62 +40,110 @@ class RestController {
             next();
         });
     }
+    
+    start() {
+        const port = this.serviceConfig.getProperty('http.port');
+
+        this.httpServer.listen(port, () => {
+            console.log("Battleship server has been started"); // Need this for test
+            logger.info('Battleship server running on port %d', port);
+        });
+    }
 
     registerPlayer(request, response) {
+        
         var name = request.body.name;
         
-        if (name) {
-            try {
-                this.applicationService.registerPlayer(name);
-                response.statusCode = 201;
-                response.setHeader('Location', `/players/${name}`);
-            } catch (error) {
-                if (error instanceof DomainError) {
-                    response.statusCode = 400;
-                    response.write(JSON.stringify({
-                        type: error.name,
-                        message: error.message,
-                        details: error.details
-                    }));
-                } else {
-                    throw error;
-                }
-            }
-        } else {
-            response.statusCode = 400;
-            response.write('Name is missing');
+        if (!name) {
+            this.sendParseError('Name of player is required');
         }
+        
+        try {
+            logger.info('registerPlayer(%s)', name);
+            this.applicationService.registerPlayer(name);
+        } catch (error) {
+            this.sendApplicationError(response, error);
+            return;
+        }
+
+        response.statusCode = HttpStatus.CREATED;
+        response.setHeader('Location', `/players/${name}`);
         response.end();
     }
 
-    listGames(request, response) {
-        response.send('The active game is..');
+    listGames(_, response) {
+        const result = this.applicationService.listGames();
+
+        response.statusCode = HttpStatus.OK;
+        response.write(JSON.stringify(result));
+        response.end();
     }
 
-    newGame(request, response) {
-        var player1 = request.body.player1;
-        var player2 = request.body.player2;
+    createGameFor(request, response) {
+        var player = request.body.player1;
 
-        if (player1 && player2) {
-            var gameId = this.applicationService.newGame(player1, player2);
-    
-            response.setHeader('Location', `/games/${gameId}`);
-            response.statusCode = 201;
-            response.write(JSON.stringify({
-                id: gameId
-            }));
-            response.end();
-        } else {
-            response.sendStatus(400);
+        if (!player) {
+            this.sendParseError(response, 'Player is required');
+            return;
         }
+        
+        var gameId;
+        
+        try {
+            logger.info('createGameFor(%s)', player);
+            gameId = this.applicationService.createGame(player);
+        } catch (error) {
+            logger.error('createGameFor(%s) -> %s', player, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+    
+        response.setHeader('Location', `/games/${gameId}`);
+        response.statusCode = HttpStatus.CREATED;
+        response.write(JSON.stringify({
+            id: gameId
+        }));
+        response.end();
+    }
+
+    join(request, response) {
+        var gameId = parseInt(request.params.id);
+        var player = request.body.player;
+
+        if (!player) {
+            this.sendParseError(response, 'Player is required');
+            return;
+        }
+
+        try {
+            logger.info('join(%s, %s)', gameId, player);
+            this.applicationService.join(gameId, player);
+        } catch (error) {
+            logger.info('join(%s, %s) -> %s', gameId, player, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+    
+        response.statusCode = HttpStatus.NO_CONTENT;
+        response.end();
     }
 
     getGameState(request, response) {
         var gameId = parseInt(request.params.id);
-        const state = this.applicationService.gameState(gameId);
+        var state = undefined;
+
+        try {
+            state = this.applicationService.gameState(gameId);
+
+            logger.info('getGameState(%s): %s', gameId, JSON.stringify(state));
+        } catch (error) {
+            logger.info('getGameState(%s) -> %s', gameId, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
     
+        response.statusCode = HttpStatus.OK;
         response.write(JSON.stringify(state));
-        response.statusCode = 200;
         response.end();
     }
 
@@ -103,82 +152,98 @@ class RestController {
         var x = request.params.x;
         var y = request.params.y;
         var shipType = request.body.shipType;
-        var alignment = request.body.alignment;
-    
+
+        if (!shipType) {
+            this.sendParseError(response, 'Cannot find ship type');
+            return;
+        }
+
+        var alignment = this.parseShipAlignment(request.body.alignment);
+
+        if (!alignment) {
+            this.sendParseError(response, 'Cannot find ship alignment');
+            return;
+        }
+        
+        var fields;
+
         try {
-            var fields = this.applicationService.placeShip(player, x, y, shipType, alignment);
-        
-            response.write(JSON.stringify({
-                fields: fields
-            }));
-        
-            response.statusCode = 200;
-    
+            logger.info('placeShip(%s, %s, %s, %s, %s)', player, x, y, shipType, alignment);
+            fields = this.applicationService.placeShip(player, x, y, shipType, alignment);
         } catch (error) {
-            if (error instanceof DomainError) {
-                response.statusCode = 400;
-                response.write(error.message);
-            } else {
-                throw error;
-            }
+            logger.warn('placeShip(%s, %s, %s, %s, %s) -> %s', player, x, y, shipType, alignment, error);
+            this.sendApplicationError(response, error);
+            return;
         }
-    
+
+        response.statusCode = HttpStatus.OK;
+        response.write(JSON.stringify({
+            fields: fields
+        }));
         response.end();
     }
 
-    startGame(request, response) {
-        var gameId = parseInt(request.params.id);
-        var start = request.body.start;
-    
-        if (start) {
-            try {
-                this.applicationService.start(gameId);
-    
-                response.statusCode = 200;
-            } catch (error) {
-                if (error instanceof DomainError) {
-                    response.statusCode = 400;
-                    response.write(JSON.stringify({
-                        type: error.name,
-                        message: error.message,
-                        details: error.details
-                    }));
-                } else {
-                    throw error;
-                }
-            }
+    parseShipAlignment(shipAlignment) {
+        var result;
+
+        switch (shipAlignment) {
+            case 'horizontally':
+            case 'horizontal':
+                result = ShipAlignment.horizontally;
+                break;
+            case 'vertically':
+            case 'vertical':
+                result = ShipAlignment.vertically;
+                break;        
+            default:
+                // TODO Error
+                break;
         }
-    
-        response.end();
+
+        return result;
     }
 
-    fire(request, response) {
+    fireAt(request, response) {
         const gameId = parseInt(request.params.gameId);
         const player = request.params.player;
         const row = request.params.row;
         const column = request.params.column;
-    
+        var fireResult;
+
         try {
-            var fireResult = this.applicationService.fire(gameId, player, row, column);
-            
-            response.statusCode = 200;
-            response.write(JSON.stringify({
-                result: fireResult
-            }));
+            fireResult = this.applicationService.fireAt(gameId, player, row, column);
         } catch (error) {
-            if (error instanceof DomainError) {
-                response.statusCode = 400;
-                response.write(JSON.stringify({
-                    type: error.name,
-                    message: error.message,
-                    details: error.details
-                }));
-            } else {
-                throw error;
-            }
+            this.sendApplicationError(response, error);
+            return;
         }
         
+        response.statusCode = HttpStatus.OK;
+        response.write(JSON.stringify({
+            result: fireResult
+        }));
         response.end();
+    }
+
+    sendParseError(response, message) {
+        response.statusCode = HttpStatus.BAD_REQUEST;
+        response.write(message);
+        response.end();
+    }
+
+    sendApplicationError(response, error) {
+        if (error instanceof DomainError) {
+            var result = {};
+            
+            response.statusCode = HttpStatus.BAD_REQUEST;
+            result['type'] = error.name,
+            result['message'] = error.message,
+            result['details'] = error.details
+
+            response.write(JSON.stringify(result));
+            response.end();
+        } else {
+            throw error;
+        }
     }
 }
 

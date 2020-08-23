@@ -1,5 +1,6 @@
 const request = require('request-promise');
 const api = require('./api');
+const { assert } = require('chai');
 
 const URL = 'http://localhost:8080';
 const DEFAULT_FIELDS = ['A1', 'A3', 'A5', 'A7', 'A9'];
@@ -36,11 +37,15 @@ class BattleshipServer {
         this.defaultFields = defaultFields;
         this.defaultShipPlacements = DEFAULT_SHIP_PLACEMENTS
         this.games = new Map();
+        this.players = [];
     }
 
     async registerPlayer(name) {
         try {
-            return await request(api.registerPlayer(this.url, name)) 
+            const result = await request(api.registerPlayer(this.url, name)) 
+            
+            this.players.push(name);
+            return result;
         } catch (statusCodeError) {
             return statusCodeError;
         }
@@ -50,39 +55,49 @@ class BattleshipServer {
         return await request(api.gameStatus(this.url, gameId));
     }
 
-    async createGame(player1, player2) {
-        const response =  await request(api.createGame(this.url, player1, player2));
-        const gameId = response.body.id;
+    async createGame(player1) {
+        const response =  await request(api.createGame(this.url, player1));
 
-        this.games.set(gameId, { player1: player1, player2: player2 });
         return response;
     }
 
-    async placeShip(gameId, player, shipType, fieldName, alignment='horizontally') {
+    async getGameState(gameId) {
+        const response = await request(api.getGameState(this.url, gameId));
+
+        return response;
+    }
+
+    async placeNShipsOfType(player, shipType, count) {
+        for (const fieldName of this.defaultFields.slice(0, count)) {
+            await this.placeShip(player, shipType, fieldName);
+        }
+    }
+    
+    async placeAllShips() {
+        assert(this.players.length === 2, 'Exactly two players need to be registered to auto prepare a game');
+        for (const player of this.players) {
+            await this.placeAllShipsFor(player);
+        }
+    }
+    
+    async placeAllShipsFor(player) {
+        for (const placement of this.defaultShipPlacements) {
+            await this.placeShip(player, placement.type, placement.head);
+        }
+    }
+
+    async placeShip(player, shipType, fieldName, alignment='horizontally') {
         var field = Field.parse(fieldName)
 
         try {
-            return await request(api.placeShip(this.url, gameId, player, field.row, field.column, shipType, alignment));
+            return await request(api.placeShip(this.url, player, field.row, field.column, shipType, alignment));
         } catch (statusCodeError) {
             return statusCodeError;
         }
     }
 
-    async placeNShipsOfType(gameId, player, shipType, count) {
-        for (const fieldName of this.defaultFields.slice(0, count)) {
-            await this.placeShip(gameId, player, shipType, fieldName);
-        }
-    }
-
-    async placeAllShips(gameId) {
-        const game = this.games.get(gameId);
-        const players = [game.player1, game.player2];
-
-        for (const player of players) {
-            for (const placement of this.defaultShipPlacements) {
-                await this.placeShip(gameId, player, placement.type, placement.head);
-            }
-        }
+    async join(gameId, player) {
+        return await request(api.join(this.url, gameId, player));
     }
 
     async startGame(gameId) {

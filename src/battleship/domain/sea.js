@@ -1,6 +1,7 @@
 var ShipAlignment = require('./ship').ShipAlignment;
 var DomainError = require('./error').DomainError;
 
+// TODO make configurable
 const GRID_SIZE = 10;
 
 class Sea {

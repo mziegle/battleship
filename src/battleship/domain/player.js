@@ -15,7 +15,7 @@ class Player {
         {
             throw new DomainError('Ship type exhausted', {
                 type: ship.type,
-                count: ship.permittedNumber
+                permitted: ship.permittedNumber
             });
         }
     

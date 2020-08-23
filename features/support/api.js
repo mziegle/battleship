@@ -14,7 +14,7 @@ var registerPlayer = function(url, name) {
     }
 }
 
-var placeShip = function(url, gameId, player, row, column, shipType, alignment) {
+var placeShip = function(url, player, row, column, shipType, alignment) {
     return {
         method: 'PUT',
         uri: `${url}/players/${player}/${row}/${column}`,
@@ -30,13 +30,12 @@ var placeShip = function(url, gameId, player, row, column, shipType, alignment) 
     };
 }
 
-var createGame = function(url, player1, player2) {
+var createGame = function(url, player1) {
     return {
         method: 'POST',
         uri: `${url}/games`,
         body: {
-            player1: player1,
-            player2: player2
+            player1: player1
         },
         headers: {
             'content-type': 'application/json'
@@ -46,10 +45,25 @@ var createGame = function(url, player1, player2) {
     };
 }
 
-var gameStatus = function(url, gameId) {
+var getGameState = function(url, gameId) {
     return {
         method: 'GET',
         uri: `${url}/games/${gameId}/state`,
+        headers: {
+            'content-type': 'application/json'
+        },
+        json: true,
+        resolveWithFullResponse: true
+    }
+}
+
+var join = function(url, gameId, player) {
+    return {
+        method: 'PATCH',
+        uri: `${url}/games/${gameId}`,
+        body: {
+            player: player
+        },
         headers: {
             'content-type': 'application/json'
         },
@@ -89,7 +103,8 @@ module.exports = {
     registerPlayer, registerPlayer,
     placeShip: placeShip,
     createGame: createGame,
+    join: join,
     startGame: startGame,
-    gameStatus: gameStatus,
+    getGameState: getGameState,
     fire: fire
 }

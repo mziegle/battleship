@@ -7,10 +7,9 @@ Feature: Player
     When a new player registers with the name player1
     Then the player is added
 
-  @skip
   Scenario: New player uses existing name
     Given the name player1 is already used
     When a new player registers with the name player1
-    Then the requestor receives an error message
+    Then the player receives an error message
       | type         | message                          |
       | Domain Error | The name player1 is already used |

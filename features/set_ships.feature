@@ -7,7 +7,7 @@ Feature: Set ships
     Given player1 has been registered
 
   Scenario Outline: Ship types and their size
-    When player1 sets a <ship type> to A1
+    When player1 places a <ship type> to A1
     Then the ship occupies the fields <from> to <to>
 
   Examples:
@@ -18,8 +18,8 @@ Feature: Set ships
     | submarine  | A1   | B1 |
 
   Scenario Outline: Number of ships per player
-    Given player1 has set <count> <ship type>
-    When player1 sets a <ship type>
+    Given player1 has placed <count> <ship type>
+    When player1 places a <ship type>
     Then the ship is not set
 
   Examples:
@@ -30,14 +30,14 @@ Feature: Set ships
     | submarine  | 4     |
 
   Scenario: Ships can be set vertically
-    When player1 sets a battleship to A1 vertically
+    When player1 places a battleship to A1 vertically
     Then the ship occupies the fields A1 to A4
 
   Scenario: Ships must not collide with each other
-    Given player1 has set a battleship to A1
-    When player1 sets a battleship to A2
+    Given player1 has placed a battleship to A1
+    When player1 places a battleship to A2
     Then the ship is not set
 
   Scenario: Ships must not be set beyond the boarder
-    When player1 sets a battleship to I1
+    When player1 places a battleship to I1
     Then the ship is not set

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "unittest": "mocha --recursive",
-    "integrationtest": "cucumber-js --format ./node_modules/cucumber-pretty --tags \"not @skip\"",
+    "integrationtest": "cross-env LOG_LEVEL=silent cucumber-js --format ./node_modules/cucumber-pretty --tags \"not @skip\"",
     "start": "node ./src/battleship/index.js",
     "test": "concurrently --raw \"npm run unittest\" \"npm run integrationtest\""
   },
@@ -14,13 +14,19 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "concurrently": "^5.1.0",
+    "cross-env": "^7.0.2",
     "cucumber": "^6.0.5",
     "cucumber-pretty": "^6.0.0",
     "mocha": "^6.2.2",
+    "pino-pretty": "^4.1.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.5"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-pino-logger": "^5.0.0",
+    "http-status-codes": "^1.4.0",
+    "pino": "^6.4.1"
   }
 }

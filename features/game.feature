@@ -3,31 +3,21 @@ Feature: Game
   As a player,
   I want to be guided through the course of the game.
 
-  Scenario: Create game
-    When a new battleship match between player1 and player2 is requested
-    Then a new game is created
-
-  Scenario: Players are not finished with placing ships
-    Given a new battleship match between player1 and player2 has been created
-    And player1 has set a carrier to A1
-    When the start of the game is requested
-    Then the requestor receives an error message
-      | type         | message                   |
-      | Domain Error | Not all ships were placed |
-
-  Scenario: Player fires although the game has not yet started
-    Given a new battleship match between player1 and player2 has been created
-    When player1 fires at A1 of player2s sea
-    Then the requestor receives an error message
-      | type         | message                           |
-      | Domain Error | The game has not been started yet |
-
-  Scenario: Players are finished with placing ships
-    Given a new battleship match between player1 and player2 has been created
-    And the players have set all their ships
-    When the start of the game is requested
-    Then the game is started
+  Scenario: Player is ready
+    Given player1 has been registered
+    And player1 has placed all its ships
+    When player1 creates a new game
+    Then the game is created
   
+  Scenario: An other player joins the game
+    Given player1 has been registered
+    And player1 has placed all its ships
+    And player1 has created a game
+    And player2 has been registered
+    And player2 has placed all its ships
+    When player2 joins the game
+    Then the game is started
+
   Scenario: Player hits water
     Given player1 and player2 have started a game
     When player1 hits water
