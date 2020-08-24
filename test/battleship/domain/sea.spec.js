@@ -1,18 +1,18 @@
 var should = require('chai').should()
-var Sea = require('../../../src/battleship/domain/sea').Sea;
+
 var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
 var Ship = require('../../../src/battleship/domain/ship').Ship;
+var Sea = require('../../../src/battleship/domain/sea').Sea;
 
 describe('Sea', () => {
     var sea;
     var placeShipHorizontally;
-    var battleship;
+    battleship = () => new Ship('battleship', 4, 2);
 
     beforeEach(() => {
         sea = new Sea();
         placeShipHorizontally = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.horizontally);
         placeShipVertically = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.vertically);
-        battleship = () => new Ship('battleship', 4, 2);
     });
 
     describe('#isHit()', () => {

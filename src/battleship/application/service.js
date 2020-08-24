@@ -27,6 +27,18 @@ class ApplicationService {
         return fields.map(field => field.toString());
     }
 
+    getShips(playerName) {
+        var player = this.playerRepository.get(playerName);
+
+        return player.sea.getShips();
+    }
+
+    removeShips(playerName) {
+        var player = this.playerRepository.get(playerName);
+
+        return player.removeShips();
+    }
+
     createGame(playerName) {
         const player = this.playerRepository.get(playerName);
         const gameId = this.gameRepository.create(player);

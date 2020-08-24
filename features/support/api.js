@@ -17,7 +17,7 @@ var registerPlayer = function(url, name) {
 var placeShip = function(url, player, row, column, shipType, alignment) {
     return {
         method: 'PUT',
-        uri: `${url}/players/${player}/${row}/${column}`,
+        uri: `${url}/players/${player}/sea/${row}/${column}`,
         body: {
             shipType: shipType,
             alignment: alignment

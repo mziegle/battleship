@@ -24,6 +24,10 @@ class Player {
         return fields;
     }
 
+    removeShips() {
+        this.sea = new Sea();
+    }
+
     enforceAllShipsPlaced() {
         var details = [{
             'player': this.name,

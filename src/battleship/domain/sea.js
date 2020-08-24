@@ -4,43 +4,49 @@ var DomainError = require('./error').DomainError;
 // TODO make configurable
 const GRID_SIZE = 10;
 
+class Ship {
+    constructor(type, size, position, alignment) {
+        this.type = type;
+        this.size = size;
+        this.position = position;
+        this.alignment = alignment;
+    }
+}
+
 class Sea {
     constructor() {
         this.grid = new Grid(GRID_SIZE);
-        this.ships = {};
+        this.ships = new Map();
     }
 
-    isHit(x, y) {
-        return this.grid.getField(x, y).occupied;
-    }
-    
-    destroy(x, y) {
-        return this.grid.getField(x, y).free();
-    }
-    
     isShipSunk(x, y) {
         var adjacentFields = this.grid.getAdjacentFields(this.grid.getField(x, y));
-    
+        
         return adjacentFields.find(field => field.occupied) === undefined;
     }
     
-    placeShip(x, y, ship, alignment) {
+    placeShip(x, y, shipConfig, alignment) {
         var fields = [];
-    
+        
         if (alignment == ShipAlignment.vertically) {
-            fields = this.grid.setVertically(x, y, ship.size);
+            fields = this.grid.setVertically(x, y, shipConfig.size);
         } else {
-            fields = this.grid.setHorizontally(x, y, ship.size);
+            fields = this.grid.setHorizontally(x, y, shipConfig.size);
         }
-    
+        
+        var ship = new Ship(shipConfig.type, shipConfig.size, {row: y, column: x}, alignment);
         var shipType = ship.type;
-    
-        if (this.ships.hasOwnProperty(shipType)) {
-            this.ships[shipType].push(ship);
+        
+        if (this.ships.has(shipType)) {
+            this.ships.get(shipType).push(ship);
         } else {
-            this.ships[shipType] = [ship];
+            this.ships.set(shipType, [ship]);
         }
         return fields;
+    }
+
+    getShips() {
+        return [...this.ships.values()].flat();
     }
     
     fire(x, y) {
@@ -55,8 +61,20 @@ class Sea {
         return 'water';
     }
     
+    isHit(x, y) {
+        return this.grid.getField(x, y).occupied;
+    }
+    
+    destroy(x, y) {
+        return this.grid.getField(x, y).free();
+    }
+
+    amountShipsOfType(type) {
+        return this.shipsByType(type).length;
+    }
+
     shipsByType(type) {
-        var ships = this.ships[type];
+        var ships = this.ships.get(type);
     
         if (Array.isArray(ships)) {
             return ships
@@ -73,10 +91,6 @@ class Sea {
             }
         }
         return true;
-    }
-
-    amountShipsOfType(type) {
-        return this.shipsByType(type).length;
     }
 }
 

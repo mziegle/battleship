@@ -36,6 +36,52 @@ describe('Service', () => {
         });
     });
 
+    describe('#placeShip()', () => {
+        beforeEach(() => {
+            // Arrange
+            service.registerPlayer('player1');
+        });
+
+        it('should place a destroyer', () => {
+            // Act
+            const fieldsOccupied = service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+
+            // Assert
+            fieldsOccupied.should.eql(['A1', 'B1', 'C1']);
+        });
+
+        it('should not allow to set more ships than configured', () => {
+            // Arrange
+            service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+
+            // Act
+            placeOneShipTooMany = () => service.placeShip('player1', 'A', 3, 'destroyer', ShipAlignment.horizontally);
+
+            // Assert
+            placeOneShipTooMany.should.throw(DomainError, 'exhausted');
+        });
+    });
+
+    describe('#getShips()', () => {
+        beforeEach(() => {
+            // Arrange
+            service.registerPlayer('player1');
+        });
+
+        it('should get the ships currently set', () => {
+            // Arrange
+            service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+
+            // Act
+            const actual = service.getShips('player1');
+
+            // Assert
+            const expected = [{type: 'destroyer', size: 3, position: {row: 1, column: 'A'}, alignment: ShipAlignment.horizontally}];
+
+            actual.should.eql(expected);
+        });
+    });
+
     describe('#createGame()', () => {
         it('should create a new game', () => {
             // Arrange
@@ -113,32 +159,6 @@ describe('Service', () => {
                     inactivePlayer: undefined
                 }
             ]);
-        });
-    });
-
-    describe('#placeShip()', () => {
-        beforeEach(() => {
-            // Arrange
-            service.registerPlayer('player1');
-        });
-
-        it('should place a destroyer', () => {
-            // Act
-            const fieldsOccupied = service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
-
-            // Assert
-            fieldsOccupied.should.eql(['A1', 'B1', 'C1']);
-        });
-
-        it('should not allow to set more ships than configured', () => {
-            // Arrange
-            service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
-
-            // Act
-            placeOneShipTooMany = () => service.placeShip('player1', 'A', 3, 'destroyer', ShipAlignment.horizontally);
-
-            // Assert
-            placeOneShipTooMany.should.throw(DomainError, 'exhausted');
         });
     });
 

@@ -1,8 +1,12 @@
 
-const express = require('express');
-const HttpStatus = require('http-status-codes');
+var cors = require('cors')
 const pino = require('pino');
+const HttpStatus = require('http-status-codes');
 const expressPino = require('express-pino-logger');
+const express = require('express');
+const { request, response } = require('express');
+const ship = require('../domain/ship');
+
 const logger = pino({level: process.env.LOG_LEVEL || 'info', prettyPrint: { colorize: true, translateTime: 'SYS:standard' }});
 const expressLogger = expressPino({ logger });
 
@@ -16,13 +20,15 @@ class RestController {
         this.applicationService = applicationService;
         this.httpServer = express();
         
-        this.allowCrossOriginRequests();
         this.httpServer.use(expressLogger);
         this.httpServer.use(express.json());
+        this.httpServer.use(cors());
 
         // user management
         this.httpServer.post('/players', (request, response) => this.registerPlayer(request, response));
-        this.httpServer.put('/players/:name/:x/:y', (request, response) => this.placeShip(request, response));
+        this.httpServer.put('/players/:name/sea/:x/:y', (request, response) => this.placeShip(request, response));
+        this.httpServer.get('/players/:name/sea/ships', (request, response) => this.getShips(request, response));
+        this.httpServer.delete('/players/:name/sea/ships', (request, response) => this.removeShips(request, response));
 
         // game management
         this.httpServer.get('/games', (request, response) => this.listGames(request, response));
@@ -30,15 +36,6 @@ class RestController {
         this.httpServer.patch('/games/:id', (request, response) => this.join(request, response));
         this.httpServer.get('/games/:id/state', (request, response) => this.getGameState(request, response));
         this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fireAt(request, response));
-    }
-    
-    allowCrossOriginRequests() {
-        this.httpServer.use(function(_, response, next) {
-            response.setHeader('Access-Control-Allow-Origin', '*');
-            response.header("Access-Control-Allow-Headers", "*");
-            response.header("Access-Control-Allow-Methods", "*");
-            next();
-        });
     }
     
     start() {
@@ -55,7 +52,8 @@ class RestController {
         var name = request.body.name;
         
         if (!name) {
-            this.sendParseError('Name of player is required');
+            this.sendParseError(response, 'Name of player is required');
+            return;
         }
         
         try {
@@ -180,6 +178,40 @@ class RestController {
         response.write(JSON.stringify({
             fields: fields
         }));
+        response.end();
+    }
+
+    getShips(request, response) {
+        var player = request.params.name;
+        var ships;
+
+        try {
+            logger.info('getShips(%s)', player);
+            ships = this.applicationService.getShips(player);
+        } catch (error) {
+            logger.info('getShips(%s) -> %s', player, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+
+        response.statusCode = HttpStatus.OK;
+        response.write(JSON.stringify(ships));
+        response.end();
+    }
+
+    removeShips(request, response) {
+        var player = request.params.name;
+
+        try {
+            logger.info('removeShips(%s)', player);
+            this.applicationService.removeShips(player);
+        } catch (error) {
+            logger.info('removeShips(%s) -> %s', player, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+        
+        response.statusCode = HttpStatus.OK;
         response.end();
     }
 
