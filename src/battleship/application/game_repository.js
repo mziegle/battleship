@@ -1,5 +1,5 @@
-var Game = require('../domain/game').Game;
-var DomainError = require('../domain/error').DomainError;
+var { Game } = require('../domain/game');
+var { DomainError } = require('../domain/error');
 
 class GameRepository {
     constructor() {
@@ -20,6 +20,10 @@ class GameRepository {
         }
 
         return this.games.get(gameId);
+    }
+
+    remove(gameId) {
+        this.games.delete(gameId);
     }
 
     list() {

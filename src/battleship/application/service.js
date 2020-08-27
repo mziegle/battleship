@@ -1,3 +1,5 @@
+const game = require('../domain/game');
+
 var DomainError = require('../domain/error').DomainError;
 var GameRepository = require('./game_repository').GameRepository;
 var PlayerRepository = require('./player_repository').PlayerRepository;
@@ -5,14 +7,27 @@ var ShipFactory = require('../domain/ship').ShipFactory;
 
 class ApplicationService {
 
-    constructor(shipConfig) {
+    constructor(shipConfigs) {
+        this.shipConfigs = shipConfigs;
+        this.shipFactory = new ShipFactory(shipConfigs); 
+        this.playerRepository = new PlayerRepository(shipConfigs);;
         this.gameRepository = new GameRepository();
-        this.shipFactory = new ShipFactory(shipConfig); 
-        this.playerRepository = new PlayerRepository(shipConfig);;
     }
 
-    registerPlayer(playerName) {
-        this.playerRepository.add(playerName);
+    registerPlayer(playerName, password) {
+        this.playerRepository.add(playerName, password);
+    }
+
+    login(playerName, password) {
+        const player = this.playerRepository.get(playerName);
+        
+        if (player.password !== password) {
+            throw new DomainError(`Password for player ${playerName} is wrong`);
+        }
+    }
+
+    getShipConfig() {
+        return this.shipConfigs;
     }
 
     listPlayers() {
@@ -21,16 +36,19 @@ class ApplicationService {
 
     placeShip(playerName, x, y, shipType, shipAlignment) {
         var player = this.playerRepository.get(playerName);
-        var ship = this.shipFactory.create(shipType);
-        var fields = player.placeShip(x, y, ship, shipAlignment);
+        var fields = player.placeShip(x, y, shipType, shipAlignment);
 
-        return fields.map(field => field.toString());
+        return fields;
+    }
+
+    removeShip(playerName, x, y) {
+        // TODO
     }
 
     getShips(playerName) {
         var player = this.playerRepository.get(playerName);
 
-        return player.sea.getShips();
+        return player.getShips();
     }
 
     removeShips(playerName) {
@@ -46,6 +64,10 @@ class ApplicationService {
         return gameId;
     }
 
+    quitGame(gameId) {
+        this.gameRepository.remove(gameId);
+    }
+
     listGames() {
         return this.gameRepository.list();
     }
@@ -59,7 +81,6 @@ class ApplicationService {
         const game = this.gameRepository.get(gameId);
 
         game.join(player);
-        game.start();
     }
 
     fireAt(gameId, target, row, column) {

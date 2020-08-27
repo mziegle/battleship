@@ -44,18 +44,18 @@ const volley = async function(attacker, victim, table) {
 
 const hitWater = async function(attacker) {
     this.response = await this.battleshipServer.fire(this.gameId, 'J10', 'player2');
-    this.response.body.result.hits.should.equal('water');
+    this.response.body.result.should.equal('water');
 }
 
 const hitShip = async function(attacker) {
     this.response = await this.battleshipServer.fire(this.gameId, 'A1', 'player2');
-    this.response.body.result.hits.should.equal('hit');
+    this.response.body.result.should.equal('hit');
 }
 
 const sinkShip = async function(attacker) {
     this.response = await this.battleshipServer.sinkShip(this.gameId, 
         'player2', this.battleshipServer.anyShipPlacement());
-    this.response.body.result.hits.should.equal('sunk');
+    this.response.body.result.should.equal('sunk');
 }
 
 const sinkAllShips = async function(attacker, victim) {
@@ -75,7 +75,7 @@ const checkShipOccupiesFields = async function(begin, end) {
 
 const checkFireResult = async function(result) {
     this.response.statusCode.should.equal(200);
-    this.response.body.result.hits.should.equal(result);
+    this.response.body.result.should.equal(result);
 }
 
 Given('both players have placed their ships as follows', placeShips)

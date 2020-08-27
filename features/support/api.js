@@ -4,7 +4,8 @@ var registerPlayer = function(url, name) {
         method: 'POST',
         uri: `${url}/players`,
         body: {
-            name: name
+            name: name,
+            password: 'secret',
         },
         headers: {
             'content-type': 'application/json'
@@ -30,12 +31,12 @@ var placeShip = function(url, player, row, column, shipType, alignment) {
     };
 }
 
-var createGame = function(url, player1) {
+var createGame = function(url, player) {
     return {
         method: 'POST',
         uri: `${url}/games`,
         body: {
-            player1: player1
+            player: player
         },
         headers: {
             'content-type': 'application/json'

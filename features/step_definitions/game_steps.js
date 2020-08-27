@@ -44,8 +44,10 @@ const verifyGameStarted = async function() {
     this.response.body.running.should.be.true;
 }
 
-const verifyGameWon = function(winner) {
-    this.response.body.result.winner.should.equal(winner);
+const verifyGameWon = async function(winner) {
+    this.response = await this.battleshipServer.getGameState(this.gameId);
+
+    this.response.body.winner.should.equal(winner);
 }
 
 const verifyErrorMessage = function(table) {

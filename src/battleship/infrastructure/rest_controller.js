@@ -22,17 +22,18 @@ class RestController {
         
         this.httpServer.use(expressLogger);
         this.httpServer.use(express.json());
+
+        // TODO only for site development
         this.httpServer.use(cors());
 
-        // user management
+        this.httpServer.post('/login', (request, response) => this.login(request, response));
         this.httpServer.post('/players', (request, response) => this.registerPlayer(request, response));
         this.httpServer.put('/players/:name/sea/:x/:y', (request, response) => this.placeShip(request, response));
         this.httpServer.get('/players/:name/sea/ships', (request, response) => this.getShips(request, response));
         this.httpServer.delete('/players/:name/sea/ships', (request, response) => this.removeShips(request, response));
-
-        // game management
         this.httpServer.get('/games', (request, response) => this.listGames(request, response));
         this.httpServer.post('/games', (request, response) => this.createGameFor(request, response));
+        this.httpServer.delete('/games/:id', (request, response) => this.quitGame(request, response));
         this.httpServer.patch('/games/:id', (request, response) => this.join(request, response));
         this.httpServer.get('/games/:id/state', (request, response) => this.getGameState(request, response));
         this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fireAt(request, response));
@@ -48,24 +49,55 @@ class RestController {
     }
 
     registerPlayer(request, response) {
-        
         var name = request.body.name;
+        var password = request.body.password;
         
         if (!name) {
             this.sendParseError(response, 'Name of player is required');
             return;
         }
-        
+        if (!password) {
+            this.sendParseError(response, 'Password is required');
+            return;
+        }
+
         try {
-            logger.info('registerPlayer(%s)', name);
-            this.applicationService.registerPlayer(name);
+            logger.info('registerPlayer(%s, %s)', name, password);
+            this.applicationService.registerPlayer(name, password);
         } catch (error) {
+            logger.info('registerPlayer(%s, %s) -> error', name, password, error);
             this.sendApplicationError(response, error);
             return;
         }
 
         response.statusCode = HttpStatus.CREATED;
         response.setHeader('Location', `/players/${name}`);
+        response.end();
+    }
+
+    login(request, response) {
+        var name = request.body.name;
+        var password = request.body.password;
+        
+        if (!name) {
+            this.sendParseError(response, 'Name of player is required');
+            return;
+        }
+        if (!password) {
+            this.sendParseError(response, 'Password is required');
+            return;
+        }
+
+        try {
+            logger.info('login(%s, %s)', name, password);
+            this.applicationService.login(name, password);
+        } catch (error) {
+            logger.info('login(%s, %s) -> error', name, password, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+
+        response.statusCode = HttpStatus.OK;
         response.end();
     }
 
@@ -78,7 +110,7 @@ class RestController {
     }
 
     createGameFor(request, response) {
-        var player = request.body.player1;
+        var player = request.body.player;
 
         if (!player) {
             this.sendParseError(response, 'Player is required');
@@ -101,6 +133,22 @@ class RestController {
         response.write(JSON.stringify({
             id: gameId
         }));
+        response.end();
+    }
+
+    quitGame(request, response) {
+        var gameId = parseInt(request.params.id);
+
+        try {
+            logger.info('quitGame(%s)', gameId);
+            this.applicationService.quitGame(gameId);
+        } catch (error) {
+            logger.info('quitGame(%s) -> %s', gameId, error);
+            this.sendApplicationError(response, error);
+            return;
+        }
+    
+        response.statusCode = HttpStatus.OK;
         response.end();
     }
 
@@ -166,8 +214,8 @@ class RestController {
         var fields;
 
         try {
-            logger.info('placeShip(%s, %s, %s, %s, %s)', player, x, y, shipType, alignment);
             fields = this.applicationService.placeShip(player, x, y, shipType, alignment);
+            logger.info('placeShip(%s, %s, %s, %s, %s) -> %s', player, x, y, shipType, alignment, fields);
         } catch (error) {
             logger.warn('placeShip(%s, %s, %s, %s, %s) -> %s', player, x, y, shipType, alignment, error);
             this.sendApplicationError(response, error);
@@ -203,8 +251,8 @@ class RestController {
         var player = request.params.name;
 
         try {
-            logger.info('removeShips(%s)', player);
             this.applicationService.removeShips(player);
+            logger.info('removeShips(%s)', player);
         } catch (error) {
             logger.info('removeShips(%s) -> %s', player, error);
             this.sendApplicationError(response, error);
@@ -244,8 +292,10 @@ class RestController {
 
         try {
             fireResult = this.applicationService.fireAt(gameId, player, row, column);
+            logger.info('fireAt(%s, %s, %s, %s): %s', gameId, player, row, column, fireResult);
         } catch (error) {
             this.sendApplicationError(response, error);
+            logger.info('fireAt(%s, %s, %s, %s) -> %s', gameId, player, row, column, error);
             return;
         }
         

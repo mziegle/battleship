@@ -1,62 +1,29 @@
-var Sea = require('./sea').Sea;
-var DomainError = require('./error').DomainError;
+var { ShipPlacement } = require('./ship_placement');
 
 class Player {
-    constructor(name, allowedShips) {
+    constructor(name, password, allowedShips) {
         this.name = name;
+        this.password = password;
         this.allowedShips = allowedShips;
-        this.sea = new Sea();
+        this.shipPlacement = new ShipPlacement(allowedShips);
     }
 
     placeShip(row, column, ship, alignment) {
-        var numberOfShipsPlaced = this.sea.amountShipsOfType(ship.type);
-        
-        if (numberOfShipsPlaced >= ship.permittedNumber)
-        {
-            throw new DomainError('Ship type exhausted', {
-                type: ship.type,
-                permitted: ship.permittedNumber
-            });
-        }
-    
-        var fields = this.sea.placeShip(row, column, ship, alignment);
+        var fields = this.shipPlacement.placeShip(row, column, ship, alignment);
     
         return fields;
     }
 
+    getShips() {
+        return this.shipPlacement.getShips();
+    }
+
     removeShips() {
-        this.sea = new Sea();
+        this.shipPlacement = new ShipPlacement(this.allowedShips);
     }
 
     enforceAllShipsPlaced() {
-        var details = [{
-            'player': this.name,
-            'shipsLeftToPlace': this.findShipsLeftToPlace()
-        }]
-        .reduce((details, current) => {
-            if (Object.keys(current.shipsLeftToPlace).length > 0)
-                details[current.player] = current.shipsLeftToPlace;
-            return details;
-        }, {});
-
-        if (Object.keys(details).length > 0) {
-            throw new DomainError('Not all ships were placed', details);
-        }
-    }
-
-    findShipsLeftToPlace(player) {
-        return this.allowedShips.map(shipConfig => {
-            return {
-                'type': shipConfig.type,
-                'shipsLeftToPlace': shipConfig.count - this.sea.amountShipsOfType(shipConfig.type)
-            }
-        })
-        .reduce((result, current) => {
-            if (current.shipsLeftToPlace > 0) {
-                result[current.type] = current.shipsLeftToPlace;
-            }
-            return result;
-        }, {});
+        this.shipPlacement.enforceAllShipsPlaced();
     }
 }
 

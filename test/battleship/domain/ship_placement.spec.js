@@ -1,64 +1,54 @@
 var should = require('chai').should()
 
 var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-var Ship = require('../../../src/battleship/domain/ship').Ship;
-var Sea = require('../../../src/battleship/domain/sea').Sea;
+var { ShipPlacement } = require('../../../src/battleship/domain/ship_placement');
+
+const SHIP_CONFIGS = [
+    { type: 'destroyer', size: 3, count: 1 },
+    { type: 'submarine', size: 2, count: 2 }
+]
 
 describe('Sea', () => {
-    var sea;
+    var shipPlacement;
     var placeShipHorizontally;
-    battleship = () => new Ship('battleship', 4, 2);
+    var placeShipVertically
 
     beforeEach(() => {
-        sea = new Sea();
-        placeShipHorizontally = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.horizontally);
-        placeShipVertically = (x, y) => sea.placeShip(x, y, battleship(), ShipAlignment.vertically);
+        shipPlacement = new ShipPlacement(SHIP_CONFIGS);
+        placeShipHorizontally = (x, y) => shipPlacement.placeShip(x, y, 'submarine', ShipAlignment.horizontally);
+        placeShipVertically = (x, y) => shipPlacement.placeShip(x, y, 'submarine', ShipAlignment.vertically);
     });
-
-    describe('#isHit()', () => {
-        it('should determine whether a shot at this field would be a hit', () => {
-            sea.isHit('A', 1).should.be.false;
-        })
-    })
 
     describe('#placeShip()', () => {
         it('should place a ship horizontally', () => {
-            sea.placeShip('A', 1, battleship(), ShipAlignment.horizontally);
-
-            sea.isHit('A', 1).should.be.true;
-            sea.isHit('B', 1).should.be.true;
-            sea.isHit('C', 1).should.be.true;
-            sea.isHit('D', 1).should.be.true;
+            // Assert / Act / Arrange
+            shipPlacement.placeShip('A', 1, 'destroyer', ShipAlignment.horizontally).should.eql(['A1', 'B1', 'C1']);
         })
 
         it('should place a ship vertically', () => {
-            sea.placeShip('A', 1, battleship(), ShipAlignment.vertically);
-
-            sea.isHit('A', 1).should.be.true;
-            sea.isHit('A', 2).should.be.true;
-            sea.isHit('A', 3).should.be.true;
-            sea.isHit('A', 4).should.be.true;
+            // Assert / Act / Arrange
+            shipPlacement.placeShip('A', 1, 'destroyer', ShipAlignment.vertically).should.eql(['A1', 'A2', 'A3']);
         })
 
         it('should not allow to place a ship outside the sea', () => {
             var placeShipToQ55 = () => placeShipHorizontally('Q', 55)
             var placeShipToANeg1 = () => placeShipHorizontally('A', -1)
             var placeShipToDollar1 = () => placeShipHorizontally('$', 1)
-
+            
             placeShipToQ55.should.throw('Q55');
             placeShipToANeg1.should.throw('A-1');
             placeShipToDollar1.should.throw('$1');
         })
-
+        
         it('should throw an error when one ships is placed onto an other', () => {
             var placeShipToA1 = () => placeShipHorizontally('A', 1);
-            var placeShipToD1 = () => placeShipHorizontally('D', 1);
-
+            var placeShipToD1 = () => placeShipHorizontally('B', 1);
+            
             placeShipToA1();
             placeShipToA1.should.throw('A1');
-            placeShipToD1.should.throw('D1');
+            placeShipToD1.should.throw('B1');
         });
-
+        
         it('should throw an error when one ship is placed directly below an other', () => {
             var placeShipToA2 = () => placeShipHorizontally('A', 2);
             
@@ -72,28 +62,28 @@ describe('Sea', () => {
             placeShipHorizontally('A', 2);
             placeShipToA1.should.throw('A2');
         });
-
+        
         it('should throw an error when one ship is placed directly to the left of an other', () => {
-            var placeShipToE1 = () => placeShipVertically('E', 1);
+            var placeShipToE1 = () => placeShipVertically('C', 1);
             
             placeShipHorizontally('A', 1);
-            placeShipToE1.should.throw('D1');
+            placeShipToE1.should.throw('B1');
         });
-
+        
         it('should throw an error when one ship is placed directly to the right of an other', () => {
             var placeShipToB2 = () => placeShipVertically('B', 2);
             
             placeShipVertically('A', 1);
             placeShipToB2.should.throw('A2');
         });
-
+        
         it('should throw an error when one ship is placed directly to the top left of an other', () => {
             var placeShipToA1 = () => placeShipHorizontally('A', 1);
             
-            placeShipVertically('E', 2);
-            placeShipToA1.should.throw('E2');
+            placeShipVertically('C', 2);
+            placeShipToA1.should.throw('C2');
         });
-
+        
         it('should throw an error when one ship is placed directly to the top right of an other', () => {
             var placeShipToA2 = () => placeShipVertically('A', 2);
             
@@ -109,11 +99,10 @@ describe('Sea', () => {
         });
 
         it('should throw an error when one ship is placed directly to the bottom right of an other', () => {
-            var placeShipToE2 = () => placeShipHorizontally('E', 2);
+            var placeShipToE2 = () => placeShipHorizontally('B', 2);
             
             placeShipHorizontally('A', 1);
-            placeShipToE2.should.throw('D1');
+            placeShipToE2.should.throw('B1');
         });
     });
-
 });

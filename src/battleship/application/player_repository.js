@@ -7,12 +7,12 @@ class PlayerRepository {
         this.allowedShips = allowedShips;
     }
 
-    add(name) {
+    add(name, password) {
         if (this.players.has(name)) {
             throw new DomainError(`The name ${name} is already used`, {});
         }
 
-        const player = new Player(name, this.allowedShips);
+        const player = new Player(name, password, this.allowedShips);
 
         this.players.set(name, player);
     }
