@@ -15,7 +15,7 @@ var setTestDefaults = function(service) {
         service.placeShip(user, 'G', 7, 'submarine', ShipAlignment.horizontally);
         service.placeShip(user, 'G', 9, 'submarine', ShipAlignment.horizontally);
     }
-} 
+}
 
 const ApplicationService = require('./application/service').ApplicationService;
 const RestController = require('./infrastructure/rest_controller').RestController;

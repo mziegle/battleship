@@ -2,9 +2,9 @@ var { Sea } = require('./sea');
 var { DomainError } = require('./error');
 
 class Player {
-    constructor(name, shipPlacement) {
+    constructor(name, fleet) {
         this.name = name;
-        this.sea = new Sea(shipPlacement.ships);
+        this.sea = new Sea(fleet.ships);
     }
 
     fireAt(row, column) {
@@ -14,6 +14,10 @@ class Player {
     allShipsSunk() {
         return this.sea.allShipsSunk();
     }
+
+    getBombedFields() {
+        return this.sea.getBombedFields();
+    }
 }
 
 class Game {
@@ -21,8 +25,8 @@ class Game {
         player1.enforceAllShipsPlaced();
 
         this.players = {};
-        this.activePlayer = new Player(player1.name, player1.shipPlacement);
-        this.players[player1.name] = this.activePlayer ;
+        this.activePlayer = new Player(player1.name, player1.fleet);
+        this.players[player1.name] = this.activePlayer;
         this.inactivePlayer = undefined;
         this.running = false;
         this.winner = undefined;
@@ -35,7 +39,7 @@ class Game {
 
         player2.enforceAllShipsPlaced();
         
-        this.inactivePlayer = new Player(player2.name, player2.shipPlacement);;
+        this.inactivePlayer = new Player(player2.name, player2.fleet);;
         this.players[player2.name] = this.inactivePlayer;
         this.running = true;
     }
@@ -74,23 +78,24 @@ class Game {
 
     fireAt(target, row, column) {
         
-        if (this.getInactivePlayerName() !== target) {
-            throw new DomainError(`It's not ${this.getInactivePlayerName()}s turn`, {});
+        if (this.winner) {
+            throw new DomainError(`Cannot fire, game is already won by ${this.winner.name}`,
+                { winner: this.winner.name });
         }
 
         if (!this.running) {
             throw new DomainError('The game has not been started yet', {});
         }
-    
-        if (this.winner) {
-            throw new DomainError(`Cannot fire, game is already won by ${this.winner.name}`,
-                { winner: this.winner.name });
+
+        if (this.getInactivePlayerName() !== target) {
+            throw new DomainError(`It's not ${this.getInactivePlayerName()}s turn`, {});
         }
-        
+
         var bombardmentResult = this.inactivePlayer.fireAt(row, column);
         
         if (this.inactivePlayer.allShipsSunk()) {
             this.winner = this.activePlayer;
+            this.running = false;
         }
 
         switch (bombardmentResult) {
@@ -104,6 +109,12 @@ class Game {
         }
         
         return bombardmentResult;
+    }
+
+    getBombedFields(playerName) {
+        const player = this.players[playerName];
+
+        return player.getBombedFields();
     }
 
     switchPlayers() {

@@ -17,7 +17,7 @@ class ShipPlacement {
     }
 }
 
-const DEFAULT_SHIP_PLACEMENTS = [
+const DEFAULT_FLEET = [
     new ShipPlacement('A1', ['B1', 'C1', 'D1', 'E1'], 'carrier'),
     new ShipPlacement('A3', ['B3', 'C3', 'D3'], 'battleship'),
     new ShipPlacement('A5', ['B5', 'C5', 'D5'], 'battleship'),
@@ -35,7 +35,7 @@ class BattleshipServer {
     constructor(url=URL, defaultFields=DEFAULT_FIELDS) {
         this.url = url;
         this.defaultFields = defaultFields;
-        this.defaultShipPlacements = DEFAULT_SHIP_PLACEMENTS
+        this.defaultShipPlacements = DEFAULT_FLEET
         this.games = new Map();
         this.players = [];
     }

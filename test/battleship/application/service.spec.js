@@ -36,13 +36,6 @@ describe('Service', () => {
         });
     });
 
-    describe('#getShipConfig()', () => {
-        it('should return the ship configuration', () => {
-            // Arrange / Act / Assert
-            service.getShipConfig().should.eql(SHIP_CONFIG);
-        });
-    });
-
     describe('#placeShip()', () => {
         beforeEach(() => {
             // Arrange
@@ -248,11 +241,40 @@ describe('Service', () => {
 
             // Assert
             service.gameState(gameId).should.eql({
-                running: true,
+                running: false,
                 activePlayer: 'player2',
                 inactivePlayer: 'player1',
                 winner: 'player1'
             });
+        });
+    });
+
+    describe('#getBombedFields', () => {
+        var gameId;
+
+        beforeEach(() => {
+            // Arrange
+            service.registerPlayer('player1');
+            service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.registerPlayer('player2');
+            service.placeShip('player2', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+
+            gameId = service.createGame('player1');
+
+            service.join(gameId, 'player2');
+        });
+
+        it('should return the misses and hits on a players see', () => {
+            // Act
+            service.fireAt(gameId, 'player2', 'A', 1);
+            service.fireAt(gameId, 'player2', 'B', 1);
+            service.fireAt(gameId, 'player2', 'A', 2);
+
+            // Assert
+            service.getBombedFields(gameId, 'player2').should.eql({
+                hits: ['A1', 'B1'],
+                misses: ['A2']
+            })
         });
     });
 })

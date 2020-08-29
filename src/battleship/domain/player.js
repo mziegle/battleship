@@ -1,29 +1,29 @@
-var { ShipPlacement } = require('./ship_placement');
+var { Fleet } = require('./fleet');
 
 class Player {
     constructor(name, password, allowedShips) {
         this.name = name;
         this.password = password;
         this.allowedShips = allowedShips;
-        this.shipPlacement = new ShipPlacement(allowedShips);
+        this.fleet = new Fleet(allowedShips);
     }
 
     placeShip(row, column, ship, alignment) {
-        var fields = this.shipPlacement.placeShip(row, column, ship, alignment);
+        var fields = this.fleet.placeShip(row, column, ship, alignment);
     
         return fields;
     }
 
     getShips() {
-        return this.shipPlacement.getShips();
+        return this.fleet.getShips();
     }
 
     removeShips() {
-        this.shipPlacement = new ShipPlacement(this.allowedShips);
+        this.fleet = new Fleet(this.allowedShips);
     }
 
     enforceAllShipsPlaced() {
-        this.shipPlacement.enforceAllShipsPlaced();
+        this.fleet.enforceAllShipsPlaced();
     }
 }
 

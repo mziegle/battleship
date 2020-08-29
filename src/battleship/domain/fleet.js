@@ -13,8 +13,7 @@ class Ship {
     }
 }
 
-class ShipPlacement {
-
+class Fleet {
     constructor(shipConfigs, gridSize = 10) {
         this.shipConfigs = shipConfigs;
         this.gridSize = gridSize;
@@ -139,8 +138,6 @@ class ShipPlacement {
     }
 
     enforceAdjacentFieldsFree(fields) {
-        const occupiedFields = this.getOccupiedFields();
-
         fields.forEach(field => {
             this.getAdjacentFieldsOf(field).forEach(adjacentField => {
                 if (this.isFieldOccupied(adjacentField)) {
@@ -182,5 +179,5 @@ class ShipPlacement {
 }
 
 module.exports = {
-    ShipPlacement: ShipPlacement
+    Fleet: Fleet
 }

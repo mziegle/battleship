@@ -1,4 +1,3 @@
-const ship = require("./ship");
 const { Field } = require("./field");
 
 class Ship {
@@ -29,7 +28,6 @@ class Ship {
 }
 
 class Sea {
-
     constructor(placedShips) {
         this.ships = placedShips.map(placedShip => new Ship([...placedShip.fields]));
         this.misses = [];
@@ -56,6 +54,13 @@ class Sea {
         }
 
         return 'water';
+    }
+
+    getBombedFields() {
+        return {
+            misses: this.getMisses(),
+            hits: this.getHits()
+        }
     }
 
     allShipsSunk() {

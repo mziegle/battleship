@@ -1,7 +1,7 @@
 var should = require('chai').should()
 
 var ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-var { ShipPlacement } = require('../../../src/battleship/domain/ship_placement');
+var { Fleet } = require('../../../src/battleship/domain/fleet');
 
 const SHIP_CONFIGS = [
     { type: 'destroyer', size: 3, count: 1 },
@@ -9,25 +9,25 @@ const SHIP_CONFIGS = [
 ]
 
 describe('Sea', () => {
-    var shipPlacement;
+    var fleet;
     var placeShipHorizontally;
     var placeShipVertically
 
     beforeEach(() => {
-        shipPlacement = new ShipPlacement(SHIP_CONFIGS);
-        placeShipHorizontally = (x, y) => shipPlacement.placeShip(x, y, 'submarine', ShipAlignment.horizontally);
-        placeShipVertically = (x, y) => shipPlacement.placeShip(x, y, 'submarine', ShipAlignment.vertically);
+        fleet = new Fleet(SHIP_CONFIGS);
+        placeShipHorizontally = (x, y) => fleet.placeShip(x, y, 'submarine', ShipAlignment.horizontally);
+        placeShipVertically = (x, y) => fleet.placeShip(x, y, 'submarine', ShipAlignment.vertically);
     });
 
     describe('#placeShip()', () => {
         it('should place a ship horizontally', () => {
             // Assert / Act / Arrange
-            shipPlacement.placeShip('A', 1, 'destroyer', ShipAlignment.horizontally).should.eql(['A1', 'B1', 'C1']);
+            fleet.placeShip('A', 1, 'destroyer', ShipAlignment.horizontally).should.eql(['A1', 'B1', 'C1']);
         })
 
         it('should place a ship vertically', () => {
             // Assert / Act / Arrange
-            shipPlacement.placeShip('A', 1, 'destroyer', ShipAlignment.vertically).should.eql(['A1', 'A2', 'A3']);
+            fleet.placeShip('A', 1, 'destroyer', ShipAlignment.vertically).should.eql(['A1', 'A2', 'A3']);
         })
 
         it('should not allow to place a ship outside the sea', () => {

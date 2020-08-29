@@ -1,16 +1,11 @@
-const game = require('../domain/game');
-
-var DomainError = require('../domain/error').DomainError;
-var GameRepository = require('./game_repository').GameRepository;
-var PlayerRepository = require('./player_repository').PlayerRepository;
-var ShipFactory = require('../domain/ship').ShipFactory;
+const { PlayerRepository } = require('./player_repository');
+const { GameRepository } = require('./game_repository');
+const { DomainError } = require('../domain/error');
 
 class ApplicationService {
-
     constructor(shipConfigs) {
         this.shipConfigs = shipConfigs;
-        this.shipFactory = new ShipFactory(shipConfigs); 
-        this.playerRepository = new PlayerRepository(shipConfigs);;
+        this.playerRepository = new PlayerRepository(shipConfigs);
         this.gameRepository = new GameRepository();
     }
 
@@ -24,10 +19,6 @@ class ApplicationService {
         if (player.password !== password) {
             throw new DomainError(`Password for player ${playerName} is wrong`);
         }
-    }
-
-    getShipConfig() {
-        return this.shipConfigs;
     }
 
     listPlayers() {
@@ -87,6 +78,12 @@ class ApplicationService {
         var game = this.gameRepository.get(gameId);
 
         return game.fireAt(target, row, column);
+    }
+
+    getBombedFields(gameId, playerName) {
+        var game = this.gameRepository.get(gameId);
+
+        return game.getBombedFields(playerName);
     }
 }
 
