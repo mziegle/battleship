@@ -1,14 +1,19 @@
+var authorizationData;
 
 var registerPlayer = function(url, name) {
+    const password = 'secret';
+
+    authorizationData = Buffer.from(name + ':' + password).toString('base64');
+
     return {
         method: 'POST',
         uri: `${url}/players`,
         body: {
             name: name,
-            password: 'secret',
+            password: password,
         },
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json'
         },
         json: true,
         resolveWithFullResponse: true
@@ -24,7 +29,8 @@ var placeShip = function(url, player, row, column, shipType, alignment) {
             alignment: alignment
         },
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true
@@ -39,7 +45,8 @@ var createGame = function(url, player) {
             player: player
         },
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true
@@ -51,7 +58,8 @@ var getGameState = function(url, gameId) {
         method: 'GET',
         uri: `${url}/games/${gameId}/state`,
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true
@@ -66,7 +74,8 @@ var join = function(url, gameId, player) {
             player: player
         },
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true
@@ -81,7 +90,8 @@ var startGame = function(url, gameId) {
             start: true
         },
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true
@@ -93,7 +103,8 @@ var fire = function(url, gameId, player, field) {
         method: 'DELETE',
         uri: `${url}/games/${gameId}/${player}/sea/${field.row}/${field.column}`,
         headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + authorizationData
         },
         json: true,
         resolveWithFullResponse: true

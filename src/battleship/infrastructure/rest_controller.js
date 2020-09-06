@@ -1,52 +1,98 @@
 
+const fs = require('fs')
 var cors = require('cors')
 const pino = require('pino');
 const HttpStatus = require('http-status-codes');
 const expressPino = require('express-pino-logger');
 const express = require('express');
-const { request, response } = require('express');
-
-const logger = pino({level: process.env.LOG_LEVEL || 'info', prettyPrint: { colorize: true, translateTime: 'SYS:standard' }});
+const https = require('https')
+const logger = pino({ level: process.env.LOG_LEVEL || 'info', prettyPrint: { colorize: true, translateTime: 'SYS:standard' } });
 const expressLogger = expressPino({ logger, useLevel: 'trace' });
+const basicAuthentication = require('express-basic-auth')
 
 const DomainError = require('../domain/error').DomainError;
 const ShipAlignment = require('../domain/ship').ShipAlignment;
 
 class RestController {
-    
     constructor(serviceConfig, applicationService) {
         this.serviceConfig = serviceConfig;
         this.applicationService = applicationService;
-        this.httpServer = express();
-        
-        this.httpServer.use(expressLogger);
-        this.httpServer.use(express.json());
+        this.application = express();
 
         // TODO only for site development
-        this.httpServer.use(cors());
+        this.application.use(cors());
 
-        this.httpServer.get('/config', (request, response) => this.getConfig(request, response));
-        this.httpServer.post('/login', (request, response) => this.login(request, response));
-        this.httpServer.post('/players', (request, response) => this.registerPlayer(request, response));
-        this.httpServer.put('/players/:name/sea/:x/:y', (request, response) => this.placeShip(request, response));
-        this.httpServer.get('/players/:name/sea/ships', (request, response) => this.getShips(request, response));
-        this.httpServer.delete('/players/:name/sea/ships', (request, response) => this.removeShips(request, response));
-        this.httpServer.get('/games', (request, response) => this.listGames(request, response));
-        this.httpServer.post('/games', (request, response) => this.createGameFor(request, response));
-        this.httpServer.delete('/games/:id', (request, response) => this.quitGame(request, response));
-        this.httpServer.patch('/games/:id', (request, response) => this.join(request, response));
-        this.httpServer.get('/games/:id/state', (request, response) => this.getGameState(request, response));
-        this.httpServer.delete('/games/:gameId/:player/sea/:row/:column', (request, response) => this.fireAt(request, response));
-        this.httpServer.get('/games/:gameId/:player/sea', (request, response) => this.getBombedFields(request, response));
+        this.registerLogger();
+        this.registerRoutes();
     }
-    
+
+    registerLogger() {
+        this.application.use(expressLogger);
+        this.application.use(express.json());
+    }
+
+    registerRoutes() {
+        this.application.get('/config',
+            (request, response) => this.getConfig(request, response));
+        this.application.post('/login',
+            (request, response) => this.login(request, response));
+        this.application.post('/players',
+            (request, response) => this.registerPlayer(request, response));
+        
+        const requireAuthentication = basicAuthentication({
+            authorizer: (username, password) => this.authenticate(username, password)
+        });
+
+        this.application.put('/players/:name/sea/:x/:y',
+            requireAuthentication, (request, response) => this.placeShip(request, response));
+        this.application.get('/players/:name/sea/ships',
+            requireAuthentication, (request, response) => this.getShips(request, response));
+        this.application.delete('/players/:name/sea/ships',
+            requireAuthentication, (request, response) => this.removeShips(request, response));
+        this.application.get('/games',
+            requireAuthentication, (request, response) => this.listGames(request, response));
+        this.application.post('/games',
+            requireAuthentication, (request, response) => this.createGameFor(request, response));
+        this.application.delete('/games/:id',
+            requireAuthentication, (request, response) => this.quitGame(request, response));
+        this.application.patch('/games/:id',
+            requireAuthentication, (request, response) => this.join(request, response));
+        this.application.get('/games/:id/state',
+            requireAuthentication, (request, response) => this.getGameState(request, response));
+        this.application.delete('/games/:gameId/:player/sea/:row/:column',
+            requireAuthentication, (request, response) => this.fireAt(request, response));
+        this.application.get('/games/:gameId/:player/sea',
+            requireAuthentication, (request, response) => this.getBombedFields(request, response));
+    }
+
     start() {
         const port = this.serviceConfig.getProperty('http.port');
+        const isTest = this.serviceConfig.getProperty('node.env') === 'test';
 
-        this.httpServer.listen(port, () => {
-            console.log("Battleship server has been started"); // Need this for test
+        const onServerStarted = () => {
+            if (isTest) {
+                console.log("Battleship server has been started");
+            }
             logger.info('Battleship server running on port %d', port);
-        });
+        }
+
+        if (isTest) {
+            this.createHttpServer().listen(port, onServerStarted);
+        } else {
+            this.createHttpsServer().listen(port, onServerStarted)
+        }
+    }
+
+    createHttpServer() {
+        return this.application;
+    }
+
+    createHttpsServer() {
+        return https
+            .createServer({
+                key: fs.readFileSync('crypto/server.key'),
+                cert: fs.readFileSync('crypto/server.cert'),
+            }, this.application);
     }
 
     getConfig(_, response) {
@@ -56,18 +102,34 @@ class RestController {
             size: size,
             ships: ships,
         });
-        
+
         logger.info('getConfig(): %s', body);
-        
+
         response.statusCode = HttpStatus.OK;
         response.write(body);
         response.end();
     }
 
+    authenticate(username, password) {
+
+        var expectedPassword;
+
+        try {
+            expectedPassword = this.applicationService.getPassword(username);
+        } catch (error) {
+            if (error instanceof DomainError) {
+                return false;
+            }
+            throw error;
+        }
+
+        return basicAuthentication.safeCompare(expectedPassword, password)
+    }
+
     registerPlayer(request, response) {
         var name = request.body.name;
         var password = request.body.password;
-        
+
         if (!name) {
             this.sendParseError(response, 'Name of player is required');
             return;
@@ -94,7 +156,7 @@ class RestController {
     login(request, response) {
         var name = request.body.name;
         var password = request.body.password;
-        
+
         if (!name) {
             this.sendParseError(response, 'Name of player is required');
             return;
@@ -132,9 +194,9 @@ class RestController {
             this.sendParseError(response, 'Player is required');
             return;
         }
-        
+
         var gameId;
-        
+
         try {
             gameId = this.applicationService.createGame(player);
             logger.info('createGameFor(%s): %s', player, gameId);
@@ -143,7 +205,7 @@ class RestController {
             this.sendApplicationError(response, error);
             return;
         }
-    
+
         response.setHeader('Location', `/games/${gameId}`);
         response.statusCode = HttpStatus.CREATED;
         response.write(JSON.stringify({
@@ -163,7 +225,7 @@ class RestController {
             this.sendApplicationError(response, error);
             return;
         }
-    
+
         response.statusCode = HttpStatus.OK;
         response.end();
     }
@@ -185,7 +247,7 @@ class RestController {
             this.sendApplicationError(response, error);
             return;
         }
-    
+
         response.statusCode = HttpStatus.NO_CONTENT;
         response.end();
     }
@@ -196,14 +258,13 @@ class RestController {
 
         try {
             state = this.applicationService.gameState(gameId);
-
             logger.info('getGameState(%s): %s', gameId, JSON.stringify(state));
         } catch (error) {
             logger.info('getGameState(%s) -> %s', gameId, error);
             this.sendApplicationError(response, error);
             return;
         }
-    
+
         response.statusCode = HttpStatus.OK;
         response.write(JSON.stringify(state));
         response.end();
@@ -255,7 +316,7 @@ class RestController {
             case 'vertically':
             case 'vertical':
                 result = ShipAlignment.vertically;
-                break;        
+                break;
             default:
                 // TODO Error
                 break;
@@ -293,7 +354,7 @@ class RestController {
             this.sendApplicationError(response, error);
             return;
         }
-        
+
         response.statusCode = HttpStatus.OK;
         response.end();
     }
@@ -313,7 +374,7 @@ class RestController {
             logger.info('fireAt(%s, %s, %s, %s) -> %s', gameId, player, row, column, error);
             return;
         }
-        
+
         response.statusCode = HttpStatus.OK;
         response.write(JSON.stringify({
             result: fireResult
@@ -335,7 +396,7 @@ class RestController {
             logger.info('getBombedFields(%s, %s) -> %s', gameId, player, error);
             return;
         }
-        
+
         response.statusCode = HttpStatus.OK;
         response.write(JSON.stringify(result));
         response.end();
@@ -350,11 +411,11 @@ class RestController {
     sendApplicationError(response, error) {
         if (error instanceof DomainError) {
             var result = {};
-            
+
             response.statusCode = HttpStatus.BAD_REQUEST;
             result['type'] = error.name,
-            result['message'] = error.message,
-            result['details'] = error.details
+                result['message'] = error.message,
+                result['details'] = error.details
             response.write(JSON.stringify(result));
             response.end();
         } else {

@@ -21,6 +21,12 @@ class ApplicationService {
         }
     }
 
+    getPassword(playerName) {
+        const player = this.playerRepository.get(playerName);
+        
+        return player.password;
+    }
+
     listPlayers() {
         return this.playerRepository.list();
     }

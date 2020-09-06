@@ -38,12 +38,14 @@ class BattleshipServer {
         this.defaultShipPlacements = DEFAULT_FLEET
         this.games = new Map();
         this.players = [];
+
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
     }
 
     async registerPlayer(name) {
         try {
-            const result = await request(api.registerPlayer(this.url, name)) 
-            
+            const result = await request(api.registerPlayer(this.url, name));
+
             this.players.push(name);
             return result;
         } catch (statusCodeError) {
