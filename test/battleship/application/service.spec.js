@@ -3,16 +3,32 @@ require('chai').should()
 const ApplicationService = require('../../../src/battleship/application/service').ApplicationService;
 const DomainError = require('../../../src/battleship/domain/error').DomainError;
 const ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
+const { GameCreated, WaterHit, PlayerJoined, ShipHit, ShipSunk, ActivePlayerSwitched, GameWon } = require('../../../src/battleship/domain/game');
+const player = require('../../../src/battleship/domain/player');
 
 const SHIP_CONFIG = [
-    { type: 'destroyer', size: 3, count: 1 }
+    { type: 'destroyer', size: 3, count: 1 },
+    { type: 'submarine', size: 2, count: 1 },
 ]
+
+class MockEventStream {
+
+    constructor() {
+        this.events = [];
+    }
+
+    publish(event) {
+        this.events.push(event);
+    }
+}
 
 describe('Service', () => {
     var service;
+    var eventStream;
 
     beforeEach(() => {
         service = new ApplicationService(SHIP_CONFIG);
+        eventStream = new MockEventStream();
     });
 
     describe('#registerPlayer()', () => {
@@ -87,8 +103,9 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
 
-            const gameId = service.createGame('player1');
+            const gameId = service.createGame('player1', eventStream);
 
             // Act / Assert
             service.gameState(gameId).should.eql({
@@ -105,14 +122,16 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
 
             service.registerPlayer('player2');
             service.placeShip('player2', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player2', 'A', 3, 'submarine', ShipAlignment.horizontally);
         });
 
         it('should quit a game', () => {
             // Arrange
-            const gameId = service.createGame('player1');
+            const gameId = service.createGame('player1', eventStream);
 
             // Act
             service.quitGame(gameId);
@@ -125,7 +144,7 @@ describe('Service', () => {
 
         it('players seas should be reset when they start a new game', () => {
             // Arrange
-            var gameId = service.createGame('player1');
+            var gameId = service.createGame('player1', eventStream);
 
             service.join(gameId, 'player2');
             service.fireAt(gameId, 'player2', 'A', 1);
@@ -133,7 +152,7 @@ describe('Service', () => {
             service.quitGame();
 
             // Act
-            gameId = service.createGame('player1');
+            gameId = service.createGame('player1', eventStream);
             service.join(gameId, 'player2');
             
             // Assert
@@ -146,11 +165,13 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
-            
-            const gameId = service.createGame('player1');
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
+
+            const gameId = service.createGame('player1', eventStream);
 
             service.registerPlayer('player2');
             service.placeShip('player2', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player2', 'A', 3, 'submarine', ShipAlignment.horizontally);
             
             // Act
             service.join(gameId, 'player2');
@@ -167,8 +188,9 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
-            
-            const gameId = service.createGame('player1');
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
+
+            const gameId = service.createGame('player1', eventStream);
 
             service.registerPlayer('player2');
 
@@ -185,7 +207,8 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
-            service.createGame('player1');
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
+            service.createGame('player1', eventStream);
 
             // Act / Assert
             service.listGames().should.eql([
@@ -206,46 +229,84 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
             service.registerPlayer('player2');
             service.placeShip('player2', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player2', 'A', 3, 'submarine', ShipAlignment.horizontally);
 
-            gameId = service.createGame('player1');
+            gameId = service.createGame('player1', eventStream);
 
             service.join(gameId, 'player2');
         });
 
         it('should indicate "water" when no ship was hit', () => {
-            // Act / Assert
-            service.fireAt(gameId, 'player2', 'D', 1).should.equal('water');
+            // Act
+            service.fireAt(gameId, 'player2', 'D', 1);
+
+            // Assert
+            eventStream.events.should.eql([
+                new GameCreated('player1'),
+                new PlayerJoined('player2'),
+                new WaterHit('player2', 'D1'),
+                new ActivePlayerSwitched('player2', 'player1'),
+            ]);
         });
 
         it('should indicate "hit" when a ship was hit', () => {
-            // Act / Assert
+            // Act
             service.fireAt(gameId, 'player2', 'C', 1).should.equal('hit');
+
+            // Assert
+            eventStream.events.should.eql([
+                new GameCreated('player1'),
+                new PlayerJoined('player2'),
+                new ShipHit('player2', 'C1')
+            ]);
         });
 
         it('should indicate "sunk" when all fields of the ship have been hit', () => {
-            // Act / Assert
-            service.fireAt(gameId, 'player2', 'A', 1).should.equal('hit');
-            service.fireAt(gameId, 'player2', 'B', 1).should.equal('hit');
-            service.fireAt(gameId, 'player2', 'C', 1).should.equal('sunk');
+            // Act
+            service.fireAt(gameId, 'player2', 'A', 1);
+            service.fireAt(gameId, 'player2', 'B', 1);
+            service.fireAt(gameId, 'player2', 'C', 1);
+
+            // Assert
+            eventStream.events.should.eql([
+                new GameCreated('player1'),
+                new PlayerJoined('player2'),
+                new ShipHit('player2', 'A1'),
+                new ShipHit('player2', 'B1'),
+                new ShipSunk('player2', 'C1'),
+                new ActivePlayerSwitched('player2', 'player1'),
+            ]);
         });
 
         it('the game is over when all ships of one player are sunk', () => {
             // Arrange
-            service.fireAt(gameId, 'player2', 'A', 1).should.equal('hit');
-            service.fireAt(gameId, 'player2', 'B', 1).should.equal('hit');
-            
+            service.fireAt(gameId, 'player2', 'A', 1);
+            service.fireAt(gameId, 'player2', 'B', 1);
+            service.fireAt(gameId, 'player2', 'C', 1);
+            service.fireAt(gameId, 'player1', 'D', 1);
+
             // Act
-            service.fireAt(gameId, 'player2', 'C', 1).should.equal('sunk');
+            service.fireAt(gameId, 'player2', 'A', 3);
+            service.fireAt(gameId, 'player2', 'B', 3);
 
             // Assert
-            service.gameState(gameId).should.eql({
-                running: false,
-                activePlayer: 'player2',
-                inactivePlayer: 'player1',
-                winner: 'player1'
-            });
+            eventStream.events.should.eql([
+                new GameCreated('player1'),
+                new PlayerJoined('player2'),
+                new ShipHit('player2', 'A1'),
+                new ShipHit('player2', 'B1'),
+                new ShipSunk('player2', 'C1'),
+                new ActivePlayerSwitched('player2', 'player1'),
+                new WaterHit('player1', 'D1'),
+                new ActivePlayerSwitched('player1', 'player2'),
+                new ShipHit('player2', 'A3'),
+                new ShipHit('player2', 'B3'),
+                new ActivePlayerSwitched('player2', 'player1'),
+                new GameWon('player1'),
+            ]);
         });
     });
 
@@ -256,10 +317,12 @@ describe('Service', () => {
             // Arrange
             service.registerPlayer('player1');
             service.placeShip('player1', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player1', 'A', 3, 'submarine', ShipAlignment.horizontally);
             service.registerPlayer('player2');
             service.placeShip('player2', 'A', 1, 'destroyer', ShipAlignment.horizontally);
+            service.placeShip('player2', 'A', 3, 'submarine', ShipAlignment.horizontally);
 
-            gameId = service.createGame('player1');
+            gameId = service.createGame('player1', eventStream);
 
             service.join(gameId, 'player2');
         });

@@ -13,6 +13,14 @@ class Field {
     }
 }
 
+let createField = function(row, column) {
+    const x = column.charCodeAt(0) - 65;
+    const y = row - 1;
+
+    return new Field(x, y);
+}
+
 module.exports = {
-    Field: Field
+    Field: Field,
+    createField: createField,
 }

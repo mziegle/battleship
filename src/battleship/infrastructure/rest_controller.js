@@ -11,6 +11,7 @@ const expressLogger = expressPino({ logger, useLevel: 'trace' });
 const basicAuthentication = require('express-basic-auth')
 
 const DomainError = require('../domain/error').DomainError;
+const EventStream = require('../infrastructure/event_stream').EventStream;
 const ShipAlignment = require('../domain/ship').ShipAlignment;
 
 class RestController {
@@ -19,8 +20,12 @@ class RestController {
         this.applicationService = applicationService;
         this.application = express();
 
-        // TODO only for site development
-        this.application.use(cors());
+        const isTestOrDevelopment = ['development', 'test'].includes(this.serviceConfig.getProperty('node.env'));
+
+        if (isTestOrDevelopment) {
+            this.application.use(cors());
+            logger.warn('Cross-origin resource sharing enabled');
+        }
 
         this.registerLogger();
         this.registerRoutes();
@@ -111,18 +116,19 @@ class RestController {
     }
 
     authenticate(username, password) {
-
         var expectedPassword;
 
         try {
             expectedPassword = this.applicationService.getPassword(username);
         } catch (error) {
+            logger.warn('Authentication failed %s', error);
             if (error instanceof DomainError) {
                 return false;
             }
             throw error;
         }
-
+        
+        logger.warn('Comparing %s and %s', expectedPassword, password);
         return basicAuthentication.safeCompare(expectedPassword, password)
     }
 
@@ -182,6 +188,8 @@ class RestController {
     listGames(_, response) {
         const result = this.applicationService.listGames();
 
+        logger.info('listGames(): %s', result);
+
         response.statusCode = HttpStatus.OK;
         response.write(JSON.stringify(result));
         response.end();
@@ -196,9 +204,10 @@ class RestController {
         }
 
         var gameId;
+        var eventStream = new EventStream();
 
         try {
-            gameId = this.applicationService.createGame(player);
+            gameId = this.applicationService.createGame(player, eventStream);
             logger.info('createGameFor(%s): %s', player, gameId);
         } catch (error) {
             logger.error('createGameFor(%s) -> %s', player, error);

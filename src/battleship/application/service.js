@@ -54,9 +54,9 @@ class ApplicationService {
         return player.removeShips();
     }
 
-    createGame(playerName) {
+    createGame(playerName, eventStream) {
         const player = this.playerRepository.get(playerName);
-        const gameId = this.gameRepository.create(player);
+        const gameId = this.gameRepository.create(player, eventStream);
 
         return gameId;
     }

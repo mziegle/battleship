@@ -1,5 +1,52 @@
 var { Sea } = require('./sea');
 var { DomainError } = require('./error');
+const { createField } = require('./field');
+
+class GameCreated {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class PlayerJoined {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class WaterHit {
+    constructor(target, field) {
+        this.target = target;
+        this.field = field;
+    }
+}
+
+class ShipHit {
+    constructor(target, field) {
+        this.target = target;
+        this.field = field;
+    }
+}
+
+class ShipSunk {
+    constructor(target, field) {
+        this.target = target;
+        this.field = field;
+    }
+}
+
+class ActivePlayerSwitched {
+    constructor(activePlayer, inactivePlayer) {
+        this.activePlayer = activePlayer;
+        this.inactivePlayer = inactivePlayer;
+    }
+}
+
+class GameWon {
+    constructor(winner) {
+        this.winner = winner;
+    }
+}
 
 class Player {
     constructor(name, fleet) {
@@ -21,7 +68,7 @@ class Player {
 }
 
 class Game {
-    constructor(player1) {
+    constructor(player1, eventStream) {
         player1.enforceAllShipsPlaced();
 
         this.players = {};
@@ -30,6 +77,8 @@ class Game {
         this.inactivePlayer = undefined;
         this.running = false;
         this.winner = undefined;
+        this.eventStream = eventStream;
+        this.eventStream.publish(new GameCreated(this.getActivePlayerName()))
     }
     
     join(player2) {
@@ -42,6 +91,7 @@ class Game {
         this.inactivePlayer = new Player(player2.name, player2.fleet);;
         this.players[player2.name] = this.inactivePlayer;
         this.running = true;
+        this.eventStream.publish(new PlayerJoined(player2.name));
     }
 
     getState() {
@@ -77,7 +127,6 @@ class Game {
     }
 
     fireAt(target, row, column) {
-        
         if (this.winner) {
             throw new DomainError(`Cannot fire, game is already won by ${this.winner.name}`,
                 { winner: this.winner.name });
@@ -100,12 +149,24 @@ class Game {
 
         switch (bombardmentResult) {
             case 'hit':
+                this.eventStream.publish(
+                    new ShipHit(this.getInactivePlayerName(), createField(column, row).toString()));
                 break;
     
             case 'water':
-            case 'sunk':
+                this.eventStream.publish(
+                    new WaterHit(this.getInactivePlayerName(), createField(column, row).toString()));
                 this.switchPlayers();
                 break;
+            case 'sunk':
+                this.eventStream.publish(
+                    new ShipSunk(this.getInactivePlayerName(), createField(column, row).toString()));
+                this.switchPlayers();
+                break;
+        }
+
+        if (this.winner) {
+            this.eventStream.publish(new GameWon(this.winner.name));
         }
         
         return bombardmentResult;
@@ -121,9 +182,17 @@ class Game {
         var tmp = this.activePlayer;
         this.activePlayer = this.inactivePlayer;
         this.inactivePlayer = tmp;
+        this.eventStream.publish(new ActivePlayerSwitched(this.getActivePlayerName(), this.getInactivePlayerName()));
     }
 }
 
 module.exports = {
-    Game: Game
+    ActivePlayerSwitched: ActivePlayerSwitched,
+    Game: Game,
+    GameCreated: GameCreated,
+    GameWon: GameWon,
+    PlayerJoined: PlayerJoined,
+    ShipHit: ShipHit,
+    ShipSunk: ShipSunk,
+    WaterHit: WaterHit,
 }

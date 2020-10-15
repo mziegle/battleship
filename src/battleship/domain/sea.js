@@ -1,4 +1,4 @@
-const { Field } = require("./field");
+const { createField } = require("./field");
 
 class Ship {
     constructor(fields) {
@@ -34,9 +34,7 @@ class Sea {
     }
 
     fireAt(column, row) {
-        const x = column.charCodeAt(0) - 65;
-        const y = row - 1;
-        const target = new Field(x, y);
+        const target = createField(row, column);
 
         for (const ship of this.ships) {
             if (ship.fireAt(target)) {

@@ -7,8 +7,8 @@ class GameRepository {
         this.counter = 0;
     }
 
-    create(player) {
-        const game = new Game(player);
+    create(player, eventStream) {
+        const game = new Game(player, eventStream);
 
         this.games.set(this.counter, game);
         return this.counter++;
