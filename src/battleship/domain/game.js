@@ -8,9 +8,10 @@ class GameCreated {
     }
 }
 
-class PlayerJoined {
-    constructor(name) {
-        this.name = name;
+class GameStarted {
+    constructor(activePlayer, inactivePlayer) {
+        this.activePlayer = activePlayer;
+        this.inactivePlayer = inactivePlayer;
     }
 }
 
@@ -91,7 +92,7 @@ class Game {
         this.inactivePlayer = new Player(player2.name, player2.fleet);;
         this.players[player2.name] = this.inactivePlayer;
         this.running = true;
-        this.eventStream.publish(new PlayerJoined(player2.name));
+        this.eventStream.publish(new GameStarted(this.getActivePlayerName(), player2.name));
     }
 
     getState() {
@@ -190,8 +191,8 @@ module.exports = {
     ActivePlayerSwitched: ActivePlayerSwitched,
     Game: Game,
     GameCreated: GameCreated,
+    GameStarted: GameStarted,
     GameWon: GameWon,
-    PlayerJoined: PlayerJoined,
     ShipHit: ShipHit,
     ShipSunk: ShipSunk,
     WaterHit: WaterHit,

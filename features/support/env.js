@@ -26,4 +26,5 @@ Before(async function (testCase) {
   
 After(async function (testCase) {
     await this.shutdownSut();
+    this.battleshipServer.shutdown();
 });

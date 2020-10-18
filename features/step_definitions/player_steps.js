@@ -1,7 +1,6 @@
 require('chai').should()
 
 const {Given, Then, When} = require('cucumber');
-const { response } = require('express');
 
 const registerPlayer = async function(name) {
     this.response = await this.battleshipServer.registerPlayer(name);

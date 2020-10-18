@@ -39,15 +39,13 @@ const verifyGameCreated = function() {
 }
 
 const verifyGameStarted = async function() {
-    this.response = await this.battleshipServer.getGameState(this.gameId);
-    
-    this.response.body.running.should.be.true;
+    await this.battleshipServer.receive('GameStarted'); 
 }
 
 const verifyGameWon = async function(winner) {
-    this.response = await this.battleshipServer.getGameState(this.gameId);
+    const event = await this.battleshipServer.receive('GameWon');
 
-    this.response.body.winner.should.equal(winner);
+    event.body.winner.should.equal(winner);
 }
 
 const verifyErrorMessage = function(table) {
@@ -58,9 +56,16 @@ const verifyErrorMessage = function(table) {
     this.response.error.message.should.equal(rows[0]['message']);
 }
 
-const verifyWhoesTurn = async function(player) {
-    this.response = await this.battleshipServer.getGameState(this.gameId);
-    this.response.body.activePlayer.should.equal(player);
+const verifyPlayerSwitched = async function(player) {
+    const event = await this.battleshipServer.receive('ActivePlayerSwitched');
+
+    event.body.activePlayer.should.equal(player);
+}
+
+const verifyPlayerNotSwitched = async function(player) {
+    const response = await this.battleshipServer.fire(this.gameId, 'J10', 'player2');
+    
+    response.body.result.should.equal('water');
 }
 
 Given('a match between {word} and {word} has been started', prepareNewGame);
@@ -74,6 +79,6 @@ When('{word} creates a new game', createGame);
 Then('the player receives an error message', verifyErrorMessage);
 Then('the game is started', verifyGameStarted);
 Then('the game is created', verifyGameCreated);
-Then('it is {word}s turn', verifyWhoesTurn)
-Then('{word} wins', verifyGameWon)
-Then('{word} is allowed to fire again', verifyWhoesTurn)
+Then('it is {word}s turn', verifyPlayerSwitched);
+Then('{word} wins', verifyGameWon);
+Then('{word} is allowed to fire again', verifyPlayerNotSwitched)

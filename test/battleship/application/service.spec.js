@@ -3,7 +3,7 @@ require('chai').should()
 const ApplicationService = require('../../../src/battleship/application/service').ApplicationService;
 const DomainError = require('../../../src/battleship/domain/error').DomainError;
 const ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
-const { GameCreated, WaterHit, PlayerJoined, ShipHit, ShipSunk, ActivePlayerSwitched, GameWon } = require('../../../src/battleship/domain/game');
+const { GameCreated, WaterHit, GameStarted, ShipHit, ShipSunk, ActivePlayerSwitched, GameWon } = require('../../../src/battleship/domain/game');
 const player = require('../../../src/battleship/domain/player');
 
 const SHIP_CONFIG = [
@@ -246,7 +246,7 @@ describe('Service', () => {
             // Assert
             eventStream.events.should.eql([
                 new GameCreated('player1'),
-                new PlayerJoined('player2'),
+                new GameStarted('player1', 'player2'),
                 new WaterHit('player2', 'D1'),
                 new ActivePlayerSwitched('player2', 'player1'),
             ]);
@@ -259,7 +259,7 @@ describe('Service', () => {
             // Assert
             eventStream.events.should.eql([
                 new GameCreated('player1'),
-                new PlayerJoined('player2'),
+                new GameStarted('player1', 'player2'),
                 new ShipHit('player2', 'C1')
             ]);
         });
@@ -273,7 +273,7 @@ describe('Service', () => {
             // Assert
             eventStream.events.should.eql([
                 new GameCreated('player1'),
-                new PlayerJoined('player2'),
+                new GameStarted('player1', 'player2'),
                 new ShipHit('player2', 'A1'),
                 new ShipHit('player2', 'B1'),
                 new ShipSunk('player2', 'C1'),
@@ -295,7 +295,7 @@ describe('Service', () => {
             // Assert
             eventStream.events.should.eql([
                 new GameCreated('player1'),
-                new PlayerJoined('player2'),
+                new GameStarted('player1', 'player2'),
                 new ShipHit('player2', 'A1'),
                 new ShipHit('player2', 'B1'),
                 new ShipSunk('player2', 'C1'),

@@ -30,10 +30,37 @@ const DEFAULT_FLEET = [
     new ShipPlacement('G9', ['H9'], 'submarine'),
 ];
 
+class GameObservable {
+    constructor() {
+        this.events = [];
+        this.observers = [];
+    }
+
+    notify(event) {
+        this.observers.forEach(observer => observer(event));
+        this.events.push(event);
+    }
+
+    receive(eventType) {
+        return new Promise((resolve) => {
+            const event = this.events.find(event => event.type === eventType);
+
+            if (event) {
+                resolve(event);
+            }
+
+            const observer = (event) => event.type === eventType ? resolve(event) : undefined;
+            
+            this.observers.push(observer);
+        });
+    }
+}
+
 class BattleshipServer {
 
     constructor(url=URL, defaultFields=DEFAULT_FIELDS) {
         this.url = url;
+        this.socketioClient;
         this.defaultFields = defaultFields;
         this.defaultShipPlacements = DEFAULT_FLEET
         this.games = new Map();
@@ -59,8 +86,31 @@ class BattleshipServer {
 
     async createGame(player1) {
         const response =  await request(api.createGame(this.url, player1));
+        this.socketioClient = require('socket.io-client')('http://localhost:8080');
+        const gameId = response.body.id;
 
+        var connected = new Promise((resolve, reject) => {
+            this.socketioClient.on('connect', () => {
+                this.gameObservable = new GameObservable();
+                this.socketioClient.emit('subscribe', {'gameId': gameId});
+                resolve();
+            });
+            this.socketioClient.on('game', (event) => {
+                this.gameObservable.notify(event);
+            });
+            this.socketioClient.on('disconnect', () => {
+                this.gameObservable = undefined;
+                reject('Socketio connected died');
+            })
+        });
+
+        await connected;
         return response;
+    }
+
+    async receive(eventType) {
+        assert(this.gameObservable, 'No connection to game!');
+        return await this.gameObservable.receive(eventType);
     }
 
     async getGameState(gameId) {
@@ -145,6 +195,12 @@ class BattleshipServer {
 
     anyShipPlacement() {
         return this.defaultShipPlacements[0];
+    }
+
+    shutdown() {
+        if (this.socketioClient) {
+            this.socketioClient.close();
+        }
     }
 }
 

@@ -5,14 +5,16 @@ const pino = require('pino');
 const HttpStatus = require('http-status-codes');
 const expressPino = require('express-pino-logger');
 const express = require('express');
+const http = require('http');
 const https = require('https')
 const logger = pino({ level: process.env.LOG_LEVEL || 'info', prettyPrint: { colorize: true, translateTime: 'SYS:standard' } });
 const expressLogger = expressPino({ logger, useLevel: 'trace' });
 const basicAuthentication = require('express-basic-auth')
 
 const DomainError = require('../domain/error').DomainError;
-const EventStream = require('../infrastructure/event_stream').EventStream;
+const EventStream = require('../application/event_stream').EventStream;
 const ShipAlignment = require('../domain/ship').ShipAlignment;
+const SocketioController = require('./socketio_controller').SocketioController;
 
 class RestController {
     constructor(serviceConfig, applicationService) {
@@ -81,15 +83,20 @@ class RestController {
             logger.info('Battleship server running on port %d', port);
         }
 
+        this.server;
+
         if (isTest) {
-            this.createHttpServer().listen(port, onServerStarted);
+            this.server = this.createHttpServer();
         } else {
-            this.createHttpsServer().listen(port, onServerStarted)
+            this.server = this.createHttpsServer();
         }
+
+        new SocketioController(this.server, this.applicationService);
+        this.server.listen(port, onServerStarted);
     }
 
     createHttpServer() {
-        return this.application;
+        return http.createServer(this.application);
     }
 
     createHttpsServer() {

@@ -61,6 +61,12 @@ class ApplicationService {
         return gameId;
     }
 
+    subscribe(gameId, onEvent) {
+        const game = this.gameRepository.get(gameId);
+
+        game.eventStream.subscribe(onEvent);
+    }
+
     quitGame(gameId) {
         this.gameRepository.remove(gameId);
     }
