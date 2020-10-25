@@ -84,7 +84,7 @@ class Game {
     
     join(player2) {
         if (this.bothPlayersPresent()) {
-            throw new DomainError(`This game has already two palyers`, {});
+            throw new DomainError(`This game has already two players`, {});
         }
 
         player2.enforceAllShipsPlaced();

@@ -1,8 +1,8 @@
 var setTestDefaults = function(service) {
     const ShipAlignment = require('./domain/ship').ShipAlignment;
 
-    for (user of ['m', 'a']) {
-        service.registerPlayer(user, user);
+    for (user of ['Michael', 'Alexandra']) {
+        service.registerPlayer(user, 'secret');
     
         service.placeShip(user, 'A', 1, 'carrier', ShipAlignment.horizontally);
         service.placeShip(user, 'A', 3, 'battleship', ShipAlignment.horizontally);

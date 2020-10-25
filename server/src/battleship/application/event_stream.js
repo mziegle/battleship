@@ -1,3 +1,4 @@
+// TODO handle game subscriptions here
 class EventStream {
     constructor() {
         this.events = []

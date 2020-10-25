@@ -12,7 +12,7 @@ class ServiceConfig {
         dotenv.config();
         this.values = new Map();
 
-        this.values.set('http.port', process.env.PORT || 8080);
+        this.values.set('http.port', process.env.PORT || 8888);
         this.values.set('http.host', process.env.HOST || '0.0.0.0');
         this.values.set('domain.ships', process.env.SHIP_CONFIG || ALLOWED_SHIPS);
         this.values.set('node.env', process.env.NODE_ENV || 'production') 

@@ -85,7 +85,8 @@ class RestController {
 
         this.server;
 
-        if (isTest) {
+        // TODO enable wss for socketio
+        if (true) {
             this.server = this.createHttpServer();
         } else {
             this.server = this.createHttpsServer();
@@ -406,7 +407,7 @@ class RestController {
 
         try {
             result = this.applicationService.getBombedFields(gameId, player);
-            logger.info('getBombedFields(%s, %s): %s', gameId, player, result);
+            logger.info('getBombedFields(%s, %s): %s', gameId, player, JSON.stringify(result));
         } catch (error) {
             this.sendApplicationError(response, error);
             logger.info('getBombedFields(%s, %s) -> %s', gameId, player, error);

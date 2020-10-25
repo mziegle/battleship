@@ -2,7 +2,7 @@ const request = require('request-promise');
 const api = require('./api');
 const { assert } = require('chai');
 
-const URL = 'http://localhost:8080';
+const URL = 'http://localhost:8888';
 const DEFAULT_FIELDS = ['A1', 'A3', 'A5', 'A7', 'A9'];
 
 class ShipPlacement {
@@ -86,7 +86,8 @@ class BattleshipServer {
 
     async createGame(player1) {
         const response =  await request(api.createGame(this.url, player1));
-        this.socketioClient = require('socket.io-client')('http://localhost:8080');
+        // TODO configure
+        this.socketioClient = require('socket.io-client')('http://localhost:8888');
         const gameId = response.body.id;
 
         var connected = new Promise((resolve, reject) => {
@@ -100,7 +101,7 @@ class BattleshipServer {
             });
             this.socketioClient.on('disconnect', () => {
                 this.gameObservable = undefined;
-                reject('Socketio connected died');
+                reject('Socketio connection died');
             })
         });
 
