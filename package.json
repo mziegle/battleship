@@ -1,0 +1,23 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "cypress": "^5.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mziegle/battleship.git"
+  },
+  "author": "Michael Ziegler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mziegle/battleship/issues"
+  },
+  "homepage": "https://github.com/mziegle/battleship#readme"
+}

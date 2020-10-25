@@ -13,7 +13,6 @@
     "core-js": "^3.6.4",
     "socket.io-client": "^2.3.1",
     "vue": "^2.5.0",
-    "vue-material": "^1.0.0-beta-15",
     "vue-router": "^3.1.6",
     "vuelidate": "^0.7.5"
   },

@@ -31,6 +31,11 @@ class RestController {
 
         this.registerLogger();
         this.registerRoutes();
+        this.serveUi();
+    }
+
+    serveUi() {
+        this.application.use(express.static('dist'));
     }
 
     registerLogger() {
