@@ -3,10 +3,10 @@
     <b-navbar>
       <b-navbar-brand href="#">Battleship</b-navbar-brand>
       <b-navbar-nav>
-        <b-nav-item v-on:click="leave">Leave</b-nav-item>
+        <b-nav-item v-on:click="leave" data-cy="leave">Leave</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
-        <b-nav-item href="#/login">Logout</b-nav-item>
+        <b-nav-item href="#/login" data-cy="logout">Logout</b-nav-item>
       </b-navbar-nav>
     </b-navbar>
     <b-row>

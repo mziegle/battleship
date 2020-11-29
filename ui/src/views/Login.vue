@@ -16,6 +16,7 @@
                 placeholder="User"
                 :state="validateState('username')"
                 aria-describedby="input-username-live-feedback"
+                data-cy="username"
               ></b-form-input>
               <b-form-invalid-feedback id="input-username-live-feedback">
                 This is a required fied and must be at least 6 characters.
@@ -28,12 +29,13 @@
                 type="password"
                 :state="validateState('password')"
                 aria-describedby="input-password-live-feedback"
+                data-cy="password"
               ></b-form-input>
               <b-form-invalid-feedback id="input-password-live-feedback">
                 This is a required fied.
               </b-form-invalid-feedback>
             </b-form-group>
-            <b-button type="submit" class="m-2" variant="primary">Login</b-button>
+            <b-button type="submit" class="m-2" variant="primary" data-cy="submit">Login</b-button>
           </b-form>
         </b-card>
       </b-col>

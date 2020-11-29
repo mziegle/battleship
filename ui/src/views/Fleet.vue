@@ -12,7 +12,7 @@
     </b-navbar>
     <b-card title="Create Your Fleet">
       <b-form-group label="Ship Type">
-        <b-form-select v-model="selectedShipType">
+        <b-form-select v-model="selectedShipType" data-cy="ship-types">
           <b-form-select-option
             v-for="shipType in shipTypes"
             :key="shipType.type"
@@ -22,7 +22,7 @@
           >
         </b-form-select>
       </b-form-group>
-      <b-form-group label="Alignment">
+      <b-form-group label="Alignment" data-cy="alignment">
         <b-form-radio v-model="selectedAlignment" value="horizontal"
           >horizontal</b-form-radio
         >
@@ -45,7 +45,7 @@
             <p v-for="(value, key) in shipsLeftToSet" v-bind:key="key">
               {{ key }}: {{ value }}
             </p>
-            <b-button v-on:click="clear">Clear</b-button>
+            <b-button v-on:click="clear" data-cy="clear">Clear</b-button>
           </div>
         </b-col>
       </b-row>
@@ -54,7 +54,7 @@
       <div class="d-block text-center">
         <div v-if="availableGames.length >= 1">
           <b-form-group>
-            <b-form-select v-model="selectedGame">
+            <b-form-select v-model="selectedGame" data-cy="active-games">
               <b-form-select-option            
                 v-for="game in availableGames"
                 :key="game.gameId"
@@ -66,6 +66,7 @@
             class="m-1"
             variant="primary"
             @click="join"
+            data-cy="join"
             >Join</b-button
           >
         </div>
