@@ -1,7 +1,7 @@
 Feature: Set ships
 
   As a player,
-  I want to set my warships on my sea.
+  I want to place my fleet on my sea.
 
   Background: Player
     Given player1 has been registered
@@ -20,7 +20,7 @@ Feature: Set ships
   Scenario Outline: Number of ships per player
     Given player1 has placed <count> <ship type>
     When player1 places a <ship type>
-    Then the ship is not set
+    Then the ship is not placed
 
   Examples:
     | ship type  | count |
@@ -36,8 +36,8 @@ Feature: Set ships
   Scenario: Ships must not collide with each other
     Given player1 has placed a battleship to A1
     When player1 places a battleship to A2
-    Then the ship is not set
+    Then the ship is not placed
 
   Scenario: Ships must not be set beyond the boarder
     When player1 places a battleship to I1
-    Then the ship is not set
+    Then the ship is not placed

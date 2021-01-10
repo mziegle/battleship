@@ -93,6 +93,6 @@ When('{word} hits a ship', hitShip);
 When('{word} fires at {word} of {word}s sea', fire)
 
 Then('the ship occupies the fields {word} to {word}', checkShipOccupiesFields);
-Then('the ship is not set', checkShipNotSet);
+Then('the ship is not placed', checkShipNotSet);
 Then('the ship is {word}', checkFireResult);
 Then('only {word} is hit', checkFireResult);

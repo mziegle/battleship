@@ -9,7 +9,7 @@ Feature: Game
     When player1 creates a new game
     Then the game is created
   
-  Scenario: An other player joins the game
+  Scenario: Another player joins the game
     Given player1 has been registered
     And player1 has placed all its ships
     And player1 has created a game
