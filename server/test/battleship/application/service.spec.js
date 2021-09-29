@@ -4,7 +4,6 @@ const ApplicationService = require('../../../src/battleship/application/service'
 const DomainError = require('../../../src/battleship/domain/error').DomainError;
 const ShipAlignment = require('../../../src/battleship/domain/ship').ShipAlignment;
 const { GameCreated, WaterHit, GameStarted, ShipHit, ShipSunk, ActivePlayerSwitched, GameWon } = require('../../../src/battleship/domain/game');
-const player = require('../../../src/battleship/domain/player');
 
 const SHIP_CONFIG = [
     { type: 'destroyer', size: 3, count: 1 },
